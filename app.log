@@ -1,0 +1,383 @@
+2025-05-31 18:43:28,149 - root - INFO - Database connection pool initialized successfully
+2025-05-31 18:43:28,207 - root - ERROR - Error executing query: relation "users" does not exist
+LINE 1: SELECT COUNT(*) FROM users
+                             ^
+
+2025-05-31 18:43:28,207 - root - ERROR - Error creating initial admin: relation "users" does not exist
+LINE 1: SELECT COUNT(*) FROM users
+                             ^
+
+2025-05-31 18:43:34,532 - root - ERROR - Error executing query: relation "users" does not exist
+LINE 3:                 FROM users
+                             ^
+
+2025-05-31 18:43:34,532 - root - ERROR - Error during login: relation "users" does not exist
+LINE 3:                 FROM users
+                             ^
+
+2025-05-31 18:47:38,314 - root - INFO - Database connection pool initialized successfully
+2025-05-31 18:47:38,366 - root - ERROR - Error executing query: value too long for type character varying(100)
+
+2025-05-31 18:47:38,366 - root - ERROR - Error creating initial admin: value too long for type character varying(100)
+
+2025-05-31 18:47:42,499 - root - WARNING - Login attempt with non-existent username: admin
+2025-05-31 18:53:47,430 - root - INFO - Database connection pool initialized successfully
+2025-05-31 18:53:56,616 - root - WARNING - Failed login attempt for user: pharmacist1
+2025-05-31 18:54:27,200 - root - WARNING - Failed login attempt for user: pharmacist1
+2025-05-31 18:55:37,455 - root - WARNING - Failed login attempt for user: pharmacist1
+2025-05-31 19:01:32,101 - root - INFO - Database connection pool initialized successfully
+2025-05-31 19:01:35,759 - root - WARNING - Failed login attempt for user: admin
+2025-05-31 19:03:36,671 - root - WARNING - Failed login attempt for user: admin
+2025-05-31 19:08:00,683 - root - INFO - Database connection pool initialized successfully
+2025-05-31 19:08:04,174 - root - ERROR - Error verifying password: not enough values to unpack (expected 2, got 1)
+2025-05-31 19:10:34,962 - root - ERROR - Error executing query: value too long for type character varying(100)
+
+2025-05-31 19:10:48,529 - root - ERROR - Error executing query: value too long for type character varying(100)
+
+2025-05-31 19:11:32,290 - root - ERROR - Error executing query: value too long for type character varying(100)
+
+2025-05-31 19:11:40,563 - root - ERROR - Error executing query: value too long for type character varying(100)
+
+2025-05-31 19:11:48,330 - root - ERROR - Error executing query: value too long for type character varying(100)
+
+2025-05-31 19:12:03,466 - root - INFO - All database connections closed
+2025-05-31 19:12:10,462 - root - ERROR - Error executing query: connection pool is closed
+2025-05-31 19:12:10,462 - root - ERROR - Error during login: connection pool is closed
+2025-05-31 19:14:33,073 - root - INFO - Database connection pool initialized successfully
+2025-05-31 19:14:40,327 - root - ERROR - Error verifying password: not enough values to unpack (expected 2, got 1)
+2025-05-31 19:16:22,066 - root - INFO - All database connections closed
+2025-05-31 19:16:26,286 - root - ERROR - Error executing query: connection pool is closed
+2025-05-31 19:16:26,286 - root - ERROR - Error during login: connection pool is closed
+2025-05-31 19:16:31,294 - root - ERROR - Error executing query: connection pool is closed
+2025-05-31 19:16:31,295 - root - ERROR - Error during login: connection pool is closed
+2025-05-31 19:16:40,774 - root - ERROR - Error executing query: connection pool is closed
+2025-05-31 19:16:40,774 - root - ERROR - Error during login: connection pool is closed
+2025-05-31 19:16:54,513 - root - INFO - Database connection pool initialized successfully
+2025-05-31 19:16:58,255 - root - ERROR - Error verifying password: not enough values to unpack (expected 2, got 1)
+2025-05-31 19:17:57,337 - root - ERROR - Error executing query: value too long for type character varying(100)
+
+2025-05-31 19:18:11,026 - root - INFO - All database connections closed
+2025-05-31 19:18:16,646 - root - ERROR - Error executing query: connection pool is closed
+2025-05-31 19:18:16,647 - root - ERROR - Error during login: connection pool is closed
+2025-05-31 19:27:30,459 - root - INFO - Database connection pool initialized successfully
+2025-05-31 19:27:39,331 - root - INFO - All database connections closed
+2025-05-31 19:27:43,576 - root - ERROR - Error executing query: connection pool is closed
+2025-05-31 19:27:43,576 - root - ERROR - Error during login: connection pool is closed
+2025-05-31 19:49:36,129 - root - INFO - Database connection pool initialized successfully
+2025-05-31 19:49:42,059 - root - ERROR - Error during login: 'Authentication' object has no attribute 'verify_password_temp'
+2025-05-31 19:50:34,703 - root - INFO - Database connection pool initialized successfully
+2025-05-31 19:50:44,335 - root - INFO - All database connections closed
+2025-05-31 19:50:52,442 - root - INFO - Connection pool was closed, reinitializing...
+2025-05-31 19:50:52,481 - root - INFO - Database connection pool initialized successfully
+2025-05-31 19:50:56,111 - root - INFO - All database connections closed
+2025-05-31 19:52:42,060 - root - INFO - Database connection pool initialized successfully
+2025-05-31 19:54:02,659 - root - INFO - Database connection pool initialized successfully
+2025-05-31 19:54:12,862 - root - INFO - Database connection pool initialized successfully
+2025-05-31 20:01:00,237 - root - INFO - Database connection pool initialized successfully
+2025-05-31 20:01:33,021 - root - INFO - All database connections closed
+2025-05-31 20:01:53,397 - root - INFO - Database connection pool initialized successfully
+2025-05-31 20:09:06,219 - root - INFO - Database connection pool initialized successfully
+2025-05-31 20:11:36,622 - root - INFO - Database connection pool initialized successfully
+2025-05-31 20:18:07,255 - root - INFO - All database connections closed
+2025-05-31 20:18:12,127 - root - INFO - Database connection pool initialized successfully
+2025-05-31 20:18:48,951 - root - INFO - All database connections closed
+2025-05-31 20:42:00,081 - root - INFO - Database connection pool initialized successfully
+2025-05-31 20:42:29,514 - root - INFO - All database connections closed
+2025-05-31 20:43:43,268 - root - INFO - Database connection pool initialized successfully
+2025-05-31 20:44:58,498 - root - INFO - All database connections closed
+2025-05-31 20:46:08,921 - root - INFO - Database connection pool initialized successfully
+2025-05-31 20:49:23,907 - root - INFO - All database connections closed
+2025-05-31 20:51:01,674 - root - INFO - Database connection pool initialized successfully
+2025-05-31 20:58:03,308 - root - INFO - All database connections closed
+2025-05-31 20:58:09,416 - root - INFO - Database connection pool initialized successfully
+2025-05-31 21:02:19,140 - root - INFO - All database connections closed
+2025-05-31 21:03:57,177 - root - INFO - Database connection pool initialized successfully
+2025-05-31 21:08:05,573 - root - INFO - All database connections closed
+2025-05-31 21:08:31,397 - root - INFO - Database connection pool initialized successfully
+2025-05-31 21:10:03,277 - root - INFO - All database connections closed
+2025-05-31 21:15:50,212 - root - INFO - Database connection pool initialized successfully
+2025-05-31 21:16:24,774 - root - INFO - All database connections closed
+2025-05-31 21:18:01,326 - root - INFO - Database connection pool initialized successfully
+2025-05-31 21:18:23,558 - root - INFO - All database connections closed
+2025-05-31 21:22:26,789 - root - INFO - Database connection pool initialized successfully
+2025-05-31 21:30:02,757 - root - INFO - Database connection pool initialized successfully
+2025-05-31 21:30:58,192 - root - INFO - All database connections closed
+2025-05-31 21:36:47,377 - root - INFO - Database connection pool initialized successfully
+2025-05-31 21:41:00,625 - root - INFO - All database connections closed
+2025-05-31 21:41:16,002 - root - INFO - Database connection pool initialized successfully
+2025-05-31 22:15:06,549 - root - INFO - All database connections closed
+2025-05-31 22:18:11,160 - root - INFO - Database connection pool initialized successfully
+2025-05-31 22:18:11,161 - root - INFO - Database connection successful! Time: 2025-05-31 22:18:11.161039+08:00, User: postgres
+2025-05-31 22:18:11,166 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 22:27:16,495 - root - INFO - All database connections closed
+2025-05-31 22:27:26,828 - root - INFO - Database connection pool initialized successfully
+2025-05-31 22:27:26,829 - root - INFO - Database connection successful! Time: 2025-05-31 22:27:26.828807+08:00, User: postgres
+2025-05-31 22:27:26,833 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 22:37:45,536 - root - INFO - All database connections closed
+2025-05-31 22:37:52,482 - root - INFO - Database connection pool initialized successfully
+2025-05-31 22:37:52,482 - root - INFO - Database connection successful! Time: 2025-05-31 22:37:52.482362+08:00, User: postgres
+2025-05-31 22:37:52,487 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 22:39:00,090 - root - INFO - Database connection pool initialized successfully
+2025-05-31 22:39:00,091 - root - INFO - Database connection successful! Time: 2025-05-31 22:39:00.091233+08:00, User: postgres
+2025-05-31 22:39:00,096 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 22:39:03,328 - root - ERROR - Error during login: 'Authentication' object has no attribute 'verify_password_temp'
+2025-05-31 22:41:37,657 - root - INFO - All database connections closed
+2025-05-31 22:47:26,706 - root - INFO - Database connection pool initialized successfully
+2025-05-31 22:47:26,706 - root - INFO - Database connection successful! Time: 2025-05-31 22:47:26.706448+08:00, User: postgres
+2025-05-31 22:47:26,711 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 22:49:32,057 - root - INFO - All database connections closed
+2025-05-31 22:51:25,369 - root - INFO - Database connection pool initialized successfully
+2025-05-31 22:51:25,370 - root - INFO - Database connection successful! Time: 2025-05-31 22:51:25.370223+08:00, User: postgres
+2025-05-31 22:51:25,375 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:07:19,919 - root - INFO - All database connections closed
+2025-05-31 23:07:27,504 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:07:27,505 - root - INFO - Database connection successful! Time: 2025-05-31 23:07:27.505288+08:00, User: postgres
+2025-05-31 23:07:27,511 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:32:24,821 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:32:24,822 - root - INFO - Database connection successful! Time: 2025-05-31 23:32:24.822174+08:00, User: postgres
+2025-05-31 23:32:24,827 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:40:14,953 - root - INFO - All database connections closed
+2025-05-31 23:40:22,930 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:40:22,931 - root - INFO - Database connection successful! Time: 2025-05-31 23:40:22.931040+08:00, User: postgres
+2025-05-31 23:40:22,936 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:41:35,528 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:41:35,529 - root - INFO - Database connection successful! Time: 2025-05-31 23:41:35.528871+08:00, User: postgres
+2025-05-31 23:41:35,534 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:44:15,721 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:44:15,722 - root - INFO - Database connection successful! Time: 2025-05-31 23:44:15.722397+08:00, User: postgres
+2025-05-31 23:44:15,728 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:46:23,996 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:46:23,997 - root - INFO - Database connection successful! Time: 2025-05-31 23:46:23.996891+08:00, User: postgres
+2025-05-31 23:46:24,002 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:46:42,727 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:46:42,728 - root - INFO - Database connection successful! Time: 2025-05-31 23:46:42.728079+08:00, User: postgres
+2025-05-31 23:46:42,733 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:46:58,010 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:46:58,010 - root - INFO - Database connection successful! Time: 2025-05-31 23:46:58.010349+08:00, User: postgres
+2025-05-31 23:46:58,015 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:49:51,948 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:49:51,949 - root - INFO - Database connection successful! Time: 2025-05-31 23:49:51.949235+08:00, User: postgres
+2025-05-31 23:49:51,954 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:52:24,475 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:52:24,475 - root - INFO - Database connection successful! Time: 2025-05-31 23:52:24.475577+08:00, User: postgres
+2025-05-31 23:52:24,480 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:53:41,716 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:53:41,716 - root - INFO - Database connection successful! Time: 2025-05-31 23:53:41.716518+08:00, User: postgres
+2025-05-31 23:53:41,721 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:56:49,279 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:56:49,280 - root - INFO - Database connection successful! Time: 2025-05-31 23:56:49.280170+08:00, User: postgres
+2025-05-31 23:56:49,285 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-05-31 23:59:54,752 - root - INFO - Database connection pool initialized successfully
+2025-05-31 23:59:54,753 - root - INFO - Database connection successful! Time: 2025-05-31 23:59:54.752879+08:00, User: postgres
+2025-05-31 23:59:54,757 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:01:37,921 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:01:37,921 - root - INFO - Database connection successful! Time: 2025-06-01 00:01:37.921352+08:00, User: postgres
+2025-06-01 00:01:37,926 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:02:00,090 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:02:00,091 - root - INFO - Database connection successful! Time: 2025-06-01 00:02:00.091353+08:00, User: postgres
+2025-06-01 00:02:00,097 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:02:11,342 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:02:11,343 - root - INFO - Database connection successful! Time: 2025-06-01 00:02:11.342712+08:00, User: postgres
+2025-06-01 00:02:11,347 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:02:24,818 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:02:24,819 - root - INFO - Database connection successful! Time: 2025-06-01 00:02:24.818768+08:00, User: postgres
+2025-06-01 00:02:24,823 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:08:13,844 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:08:13,845 - root - INFO - Database connection successful! Time: 2025-06-01 00:08:13.844751+08:00, User: postgres
+2025-06-01 00:08:13,849 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:09:54,137 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:09:54,137 - root - INFO - Database connection successful! Time: 2025-06-01 00:09:54.137359+08:00, User: postgres
+2025-06-01 00:09:54,142 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:13:32,423 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:13:32,424 - root - INFO - Database connection successful! Time: 2025-06-01 00:13:32.423988+08:00, User: postgres
+2025-06-01 00:13:32,429 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:14:51,360 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:14:51,361 - root - INFO - Database connection successful! Time: 2025-06-01 00:14:51.361078+08:00, User: postgres
+2025-06-01 00:14:51,366 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:15:23,733 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:15:23,734 - root - INFO - Database connection successful! Time: 2025-06-01 00:15:23.733893+08:00, User: postgres
+2025-06-01 00:15:23,739 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:19:25,480 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:19:25,481 - root - INFO - Database connection successful! Time: 2025-06-01 00:19:25.481152+08:00, User: postgres
+2025-06-01 00:19:25,485 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:20:48,273 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:20:48,274 - root - INFO - Database connection successful! Time: 2025-06-01 00:20:48.274275+08:00, User: postgres
+2025-06-01 00:20:48,279 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:25:10,570 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:25:10,571 - root - INFO - Database connection successful! Time: 2025-06-01 00:25:10.570932+08:00, User: postgres
+2025-06-01 00:25:10,575 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:26:32,101 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:26:32,102 - root - INFO - Database connection successful! Time: 2025-06-01 00:26:32.102018+08:00, User: postgres
+2025-06-01 00:26:32,108 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:28:55,354 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:28:55,355 - root - INFO - Database connection successful! Time: 2025-06-01 00:28:55.355062+08:00, User: postgres
+2025-06-01 00:28:55,360 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:35:06,001 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:35:06,002 - root - INFO - Database connection successful! Time: 2025-06-01 00:35:06.002181+08:00, User: postgres
+2025-06-01 00:35:06,007 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:35:18,076 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:35:18,076 - root - INFO - Database connection successful! Time: 2025-06-01 00:35:18.076557+08:00, User: postgres
+2025-06-01 00:35:18,081 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:40:14,564 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:40:14,565 - root - INFO - Database connection successful! Time: 2025-06-01 00:40:14.565079+08:00, User: postgres
+2025-06-01 00:40:14,570 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:48:07,372 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:48:07,372 - root - INFO - Database connection successful! Time: 2025-06-01 00:48:07.372347+08:00, User: postgres
+2025-06-01 00:48:07,377 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:50:24,113 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:50:24,114 - root - INFO - Database connection successful! Time: 2025-06-01 00:50:24.113895+08:00, User: postgres
+2025-06-01 00:50:24,119 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:50:55,834 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:50:55,835 - root - INFO - Database connection successful! Time: 2025-06-01 00:50:55.835322+08:00, User: postgres
+2025-06-01 00:50:55,840 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 00:52:45,609 - root - INFO - Database connection pool initialized successfully
+2025-06-01 00:52:45,610 - root - INFO - Database connection successful! Time: 2025-06-01 00:52:45.609738+08:00, User: postgres
+2025-06-01 00:52:45,614 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 01:05:54,742 - root - INFO - Database connection pool initialized successfully
+2025-06-01 01:05:54,743 - root - INFO - Database connection successful! Time: 2025-06-01 01:05:54.743297+08:00, User: postgres
+2025-06-01 01:05:54,748 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 01:08:38,726 - root - INFO - Database connection pool initialized successfully
+2025-06-01 01:08:38,727 - root - INFO - Database connection successful! Time: 2025-06-01 01:08:38.727293+08:00, User: postgres
+2025-06-01 01:08:38,732 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 01:12:12,930 - root - INFO - Database connection pool initialized successfully
+2025-06-01 01:12:12,931 - root - INFO - Database connection successful! Time: 2025-06-01 01:12:12.931146+08:00, User: postgres
+2025-06-01 01:12:12,936 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 10:52:41,176 - root - INFO - Database connection pool initialized successfully
+2025-06-01 10:52:41,194 - root - INFO - Database connection successful! Time: 2025-06-01 10:52:41.176813+08:00, User: postgres
+2025-06-01 10:52:41,242 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 10:53:27,454 - root - ERROR - Error during login: 'Authentication' object has no attribute 'verify_password_temp'
+2025-06-01 10:55:06,035 - root - INFO - All database connections closed
+2025-06-01 10:55:20,033 - root - INFO - Database connection pool initialized successfully
+2025-06-01 10:55:20,034 - root - INFO - Database connection successful! Time: 2025-06-01 10:55:20.033589+08:00, User: postgres
+2025-06-01 10:55:20,038 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 11:30:11,797 - root - INFO - All database connections closed
+2025-06-01 11:30:20,889 - root - INFO - Database connection pool initialized successfully
+2025-06-01 11:30:20,890 - root - INFO - Database connection successful! Time: 2025-06-01 11:30:20.889526+08:00, User: postgres
+2025-06-01 11:30:20,895 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 11:38:16,832 - root - INFO - Database connection pool initialized successfully
+2025-06-01 11:38:16,833 - root - INFO - Database connection successful! Time: 2025-06-01 11:38:16.833081+08:00, User: postgres
+2025-06-01 11:38:16,838 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 11:39:04,604 - root - INFO - All database connections closed
+2025-06-01 11:39:10,960 - root - INFO - Database connection pool initialized successfully
+2025-06-01 11:39:10,961 - root - INFO - Database connection successful! Time: 2025-06-01 11:39:10.961149+08:00, User: postgres
+2025-06-01 11:39:10,966 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 11:43:56,996 - root - INFO - All database connections closed
+2025-06-01 11:45:47,482 - root - INFO - Database connection pool initialized successfully
+2025-06-01 11:45:47,483 - root - INFO - Database connection successful! Time: 2025-06-01 11:45:47.482678+08:00, User: postgres
+2025-06-01 11:45:47,487 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 11:45:50,796 - root - ERROR - Error during login: 'Authentication' object has no attribute 'verify_password_temp'
+2025-06-01 11:54:25,357 - root - INFO - All database connections closed
+2025-06-01 11:54:37,258 - root - INFO - Database connection pool initialized successfully
+2025-06-01 11:54:37,259 - root - INFO - Database connection successful! Time: 2025-06-01 11:54:37.258601+08:00, User: postgres
+2025-06-01 11:54:37,263 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 11:56:25,917 - root - INFO - All database connections closed
+2025-06-01 11:56:39,653 - root - INFO - Database connection pool initialized successfully
+2025-06-01 11:56:39,653 - root - INFO - Database connection successful! Time: 2025-06-01 11:56:39.653417+08:00, User: postgres
+2025-06-01 11:56:39,659 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 12:27:23,999 - root - INFO - All database connections closed
+2025-06-01 12:27:38,337 - root - INFO - Database connection pool initialized successfully
+2025-06-01 12:27:38,337 - root - INFO - Database connection successful! Time: 2025-06-01 12:27:38.337335+08:00, User: postgres
+2025-06-01 12:27:38,343 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 12:30:49,903 - root - INFO - All database connections closed
+2025-06-01 12:30:57,383 - root - INFO - Database connection pool initialized successfully
+2025-06-01 12:30:57,384 - root - INFO - Database connection successful! Time: 2025-06-01 12:30:57.383948+08:00, User: postgres
+2025-06-01 12:30:57,389 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 12:32:07,446 - root - ERROR - Error during login: 'Authentication' object has no attribute 'verify_password_temp'
+2025-06-01 12:44:05,799 - root - INFO - All database connections closed
+2025-06-01 12:44:17,976 - root - INFO - Database connection pool initialized successfully
+2025-06-01 12:44:17,977 - root - INFO - Database connection successful! Time: 2025-06-01 12:44:17.976996+08:00, User: postgres
+2025-06-01 12:44:17,982 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 12:46:00,528 - root - INFO - All database connections closed
+2025-06-01 12:46:05,584 - root - INFO - Database connection pool initialized successfully
+2025-06-01 12:46:05,585 - root - INFO - Database connection successful! Time: 2025-06-01 12:46:05.584861+08:00, User: postgres
+2025-06-01 12:46:05,589 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 12:57:42,312 - root - INFO - All database connections closed
+2025-06-01 12:57:54,339 - root - INFO - Database connection pool initialized successfully
+2025-06-01 12:57:54,339 - root - INFO - Database connection successful! Time: 2025-06-01 12:57:54.339292+08:00, User: postgres
+2025-06-01 12:57:54,344 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 13:03:11,168 - root - INFO - All database connections closed
+2025-06-01 13:03:18,399 - root - INFO - Database connection pool initialized successfully
+2025-06-01 13:03:18,400 - root - INFO - Database connection successful! Time: 2025-06-01 13:03:18.399770+08:00, User: postgres
+2025-06-01 13:03:18,405 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 13:23:52,097 - root - INFO - All database connections closed
+2025-06-01 13:23:59,463 - root - INFO - Database connection pool initialized successfully
+2025-06-01 13:23:59,464 - root - INFO - Database connection successful! Time: 2025-06-01 13:23:59.464078+08:00, User: postgres
+2025-06-01 13:23:59,469 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 13:24:29,033 - root - INFO - All database connections closed
+2025-06-01 13:24:36,574 - root - INFO - Database connection pool initialized successfully
+2025-06-01 13:24:36,575 - root - INFO - Database connection successful! Time: 2025-06-01 13:24:36.574573+08:00, User: postgres
+2025-06-01 13:24:36,581 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 14:04:46,125 - root - INFO - All database connections closed
+2025-06-01 14:04:52,380 - root - INFO - Database connection pool initialized successfully
+2025-06-01 14:04:52,381 - root - INFO - Database connection successful! Time: 2025-06-01 14:04:52.380869+08:00, User: postgres
+2025-06-01 14:04:52,386 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 14:12:19,899 - root - INFO - All database connections closed
+2025-06-01 14:12:27,151 - root - INFO - Database connection pool initialized successfully
+2025-06-01 14:12:27,152 - root - INFO - Database connection successful! Time: 2025-06-01 14:12:27.152143+08:00, User: postgres
+2025-06-01 14:12:27,157 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 14:19:20,812 - root - INFO - All database connections closed
+2025-06-01 14:19:26,834 - root - INFO - Database connection pool initialized successfully
+2025-06-01 14:19:26,835 - root - INFO - Database connection successful! Time: 2025-06-01 14:19:26.834806+08:00, User: postgres
+2025-06-01 14:19:26,840 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 14:20:40,028 - root - INFO - All database connections closed
+2025-06-01 14:43:15,398 - root - INFO - Database connection pool initialized successfully
+2025-06-01 14:43:15,399 - root - INFO - Database connection successful! Time: 2025-06-01 14:43:15.398829+08:00, User: postgres
+2025-06-01 14:43:15,404 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 14:45:20,427 - root - INFO - Database connection pool initialized successfully
+2025-06-01 14:45:20,428 - root - INFO - Database connection successful! Time: 2025-06-01 14:45:20.428315+08:00, User: postgres
+2025-06-01 14:45:20,433 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 14:56:31,350 - root - INFO - All database connections closed
+2025-06-01 14:57:36,365 - root - INFO - Database connection pool initialized successfully
+2025-06-01 14:57:36,365 - root - INFO - Database connection successful! Time: 2025-06-01 14:57:36.365629+08:00, User: postgres
+2025-06-01 14:57:36,371 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 15:01:03,270 - root - INFO - All database connections closed
+2025-06-01 15:19:39,581 - root - INFO - Database connection pool initialized successfully
+2025-06-01 15:19:39,582 - root - INFO - Database connection successful! Time: 2025-06-01 15:19:39.581792+08:00, User: postgres
+2025-06-01 15:19:39,587 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 15:29:48,249 - root - INFO - All database connections closed
+2025-06-01 15:29:57,505 - root - INFO - Database connection pool initialized successfully
+2025-06-01 15:29:57,505 - root - INFO - Database connection successful! Time: 2025-06-01 15:29:57.505371+08:00, User: postgres
+2025-06-01 15:29:57,510 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 15:39:25,600 - root - INFO - All database connections closed
+2025-06-01 15:39:32,743 - root - INFO - Database connection pool initialized successfully
+2025-06-01 15:39:32,744 - root - INFO - Database connection successful! Time: 2025-06-01 15:39:32.743870+08:00, User: postgres
+2025-06-01 15:39:32,748 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 15:44:42,992 - root - INFO - All database connections closed
+2025-06-01 15:44:56,322 - root - INFO - Database connection pool initialized successfully
+2025-06-01 15:44:56,323 - root - INFO - Database connection successful! Time: 2025-06-01 15:44:56.322662+08:00, User: postgres
+2025-06-01 15:44:56,329 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 15:48:17,728 - root - INFO - All database connections closed
+2025-06-01 15:52:25,825 - root - INFO - Database connection pool initialized successfully
+2025-06-01 15:52:25,826 - root - INFO - Database connection successful! Time: 2025-06-01 15:52:25.826133+08:00, User: postgres
+2025-06-01 15:52:25,830 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 16:08:45,489 - root - INFO - All database connections closed
+2025-06-01 16:08:51,471 - root - INFO - Database connection pool initialized successfully
+2025-06-01 16:08:51,472 - root - INFO - Database connection successful! Time: 2025-06-01 16:08:51.472088+08:00, User: postgres
+2025-06-01 16:08:51,477 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 16:10:19,120 - root - WARNING - Login attempt with non-existent username: CASHIER1
+2025-06-01 16:12:56,729 - root - INFO - All database connections closed
+2025-06-01 16:17:10,200 - root - INFO - Database connection pool initialized successfully
+2025-06-01 16:17:10,201 - root - INFO - Database connection successful! Time: 2025-06-01 16:17:10.201133+08:00, User: postgres
+2025-06-01 16:17:10,206 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 16:31:21,826 - root - INFO - All database connections closed
+2025-06-01 16:31:28,419 - root - INFO - Database connection pool initialized successfully
+2025-06-01 16:31:28,420 - root - INFO - Database connection successful! Time: 2025-06-01 16:31:28.420244+08:00, User: postgres
+2025-06-01 16:31:28,425 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 16:32:17,546 - root - INFO - All database connections closed
+2025-06-01 16:42:33,064 - root - INFO - Database connection pool initialized successfully
+2025-06-01 16:42:33,065 - root - INFO - Database connection successful! Time: 2025-06-01 16:42:33.064787+08:00, User: postgres
+2025-06-01 16:42:33,071 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-01 16:42:52,731 - root - INFO - All database connections closed
+2025-06-02 01:04:04,236 - root - INFO - Database connection pool initialized successfully
+2025-06-02 01:04:04,255 - root - INFO - Database connection successful! Time: 2025-06-02 01:04:04.237269+08:00, User: postgres
+2025-06-02 01:04:04,297 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-02 01:04:34,819 - root - INFO - Database connection pool initialized successfully
+2025-06-02 01:04:34,820 - root - INFO - Database connection successful! Time: 2025-06-02 01:04:34.820076+08:00, User: postgres
+2025-06-02 01:04:34,825 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-03 00:18:58,198 - root - INFO - Database connection pool initialized successfully
+2025-06-03 00:18:58,214 - root - INFO - Database connection successful! Time: 2025-06-03 00:18:58.198505+08:00, User: postgres
+2025-06-03 00:18:58,251 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
+2025-06-03 00:30:22,341 - root - INFO - All database connections closed
+2025-06-03 00:30:29,802 - root - INFO - Database connection pool initialized successfully
+2025-06-03 00:30:29,803 - root - INFO - Database connection successful! Time: 2025-06-03 00:30:29.803005+08:00, User: postgres
+2025-06-03 00:30:29,809 - root - INFO - Existing tables: ['audit_logs', 'categories', 'products', 'sale_items', 'sales', 'suppliers', 'users']
