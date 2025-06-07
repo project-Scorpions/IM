@@ -628,24 +628,24 @@ class POSWidget(QWidget):
     def update_totals(self):
         """Update the total amounts"""
         subtotal = sum(item['subtotal'] for item in self.cart_items)
-        
         self.subtotal_label.setText(f"₱{subtotal:.2f}")
-    
-        # Update cash tendered input maximum if needed
-        if hasattr(self, 'cash_tendered_input'):
-            self.cash_tendered_input.setMaximum(subtotal * 10)  # Set a reasonable maximum
+
+        # Call calculate_change if cash tendering UI elements are present.
+        # calculate_change handles the change display and checkout button state for cash payments.
+        if hasattr(self, 'cash_tendering_frame') and self.cash_tendering_frame.isVisible():
+            # REMOVED: self.cash_tendered_input.setMaximum(subtotal * 10) 
             self.calculate_change()
-    
-        # Enable/disable checkout button
-        has_items = len(self.cart_items) > 0
-    
-        if has_items and self.payment_method.currentText() == "Cash":
-            # For cash, only enable if tendered amount is sufficient
-            cash_tendered = self.cash_tendered_input.value() if hasattr(self, 'cash_tendered_input') else 0
-            self.checkout_btn.setEnabled(cash_tendered >= subtotal)
         else:
-            # For other payment methods
-            self.checkout_btn.setEnabled(has_items)
+            # For non-cash payment methods, checkout button state depends on whether cart has items.
+            self.checkout_btn.setEnabled(len(self.cart_items) > 0)
+
+        # If the cart is empty, ensure the checkout button is disabled.
+        # And if cash tendering is visible, reset the change label.
+        if not self.cart_items:
+            self.checkout_btn.setEnabled(False)
+            if hasattr(self, 'cash_tendering_frame') and self.cash_tendering_frame.isVisible():
+                if hasattr(self, 'change_label'): # Ensure change_label exists
+                    self.change_label.setText("₱ 0.00")
     
     def process_checkout(self):
         """Process the checkout"""
