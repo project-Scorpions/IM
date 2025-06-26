@@ -61,10 +61,12 @@ class POSWidget(QWidget):
         
         search_layout.addLayout(search_input_layout)
         
-        # Products table
+        # Products table - UPDATED with new columns
         self.products_table = QTableWidget()
-        self.products_table.setColumnCount(4)
-        self.products_table.setHorizontalHeaderLabels(["ID", "Name", "Unit Price", "Stock"])
+        self.products_table.setColumnCount(7)  # increased column count to 7
+        self.products_table.setHorizontalHeaderLabels([
+            "ID", "Name", "Type", "Category", "Unit", "Price", "Stock"
+        ])
         self.products_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.products_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.products_table.setSelectionBehavior(QTableWidget.SelectRows)
@@ -86,6 +88,20 @@ class POSWidget(QWidget):
         
         self.product_stock_label = QLabel("-")
         details_layout.addRow("Available Stock:", self.product_stock_label)
+        
+        # Medication Type and Unit inputs
+        type_layout = QHBoxLayout()
+        self.med_type_combo = QComboBox()
+        self.med_type_combo.addItems(["Branded", "Generic"])
+        self.med_type_combo.setEnabled(False)  # Default disabled until product selected
+        type_layout.addWidget(self.med_type_combo)
+        
+        self.unit_input = QLineEdit()
+        self.unit_input.setPlaceholderText("Unit (e.g., mg, g, ml)")
+        self.unit_input.setEnabled(False)  # Default disabled until product selected
+        type_layout.addWidget(self.unit_input)
+        
+        details_layout.addRow("Type/Unit:", type_layout)
         
         # Quantity selector
         quantity_layout = QHBoxLayout()
@@ -322,6 +338,12 @@ class POSWidget(QWidget):
         self.product_price_label.setText("-")
         self.product_stock_label.setText("-")
         self.add_to_cart_btn.setEnabled(False)
+        
+        # Reset medication type and unit inputs
+        self.med_type_combo.setCurrentIndex(0)
+        self.med_type_combo.setEnabled(False)
+        self.unit_input.clear()
+        self.unit_input.setEnabled(False)
     
         # Clear the search input
         self.search_input.clear()
@@ -356,14 +378,41 @@ class POSWidget(QWidget):
             connection = self.db.get_connection()
             cursor = connection.cursor()
     
+            # Check if the additional columns exist
+            has_medication_details = False
+            try:
+                cursor.execute("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'products' AND column_name = 'is_generic'
+                """)
+                has_medication_details = cursor.fetchone() is not None
+            except:
+                # If the check fails, assume columns don't exist
+                has_medication_details = False
+    
             # Get products with stock > 0 AND is_active = TRUE
-            query = """
-                SELECT p.product_id, p.product_name, p.unit_price, p.stock_quantity, c.name
-                FROM products p
-                LEFT JOIN categories c ON p.category_id = c.category_id
-                WHERE p.stock_quantity > 0 AND p.is_active = TRUE
-                ORDER BY p.product_name
-            """
+            if has_medication_details:
+                # If medication detail columns exist, include them
+                query = """
+                    SELECT p.product_id, p.product_name, p.is_generic, c.name, 
+                           p.unit_measurement, p.unit_price, p.stock_quantity
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.category_id
+                    WHERE p.stock_quantity > 0 AND p.is_active = TRUE
+                    ORDER BY p.product_name
+                """
+            else:
+                # Original query without medication details - add placeholders for the missing columns
+                query = """
+                    SELECT p.product_id, p.product_name, NULL as is_generic, c.name, 
+                           '' as unit_measurement, p.unit_price, p.stock_quantity
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.category_id
+                    WHERE p.stock_quantity > 0 AND p.is_active = TRUE
+                    ORDER BY p.product_name
+                """
+            
             cursor.execute(query)
             products = cursor.fetchall()
     
@@ -372,30 +421,48 @@ class POSWidget(QWidget):
     
             for row_idx, product in enumerate(products):
                 self.products_table.insertRow(row_idx)
-            
-                product_id, name, price, stock, category = product
-            
+                
+                product_id = product[0]
+                name = product[1]
+                is_generic = product[2]
+                category = product[3] or "Uncategorized"
+                unit_measurement = product[4] or ""
+                price = product[5]
+                stock = product[6]
+                
                 # Add to autocomplete list
                 product_names.append(name)
-            
-                # Product ID
+                
+                # Product ID (column 0)
                 self.products_table.setItem(row_idx, 0, QTableWidgetItem(str(product_id)))
-            
-                # Product Name
+                
+                # Product Name (column 1)
                 self.products_table.setItem(row_idx, 1, QTableWidgetItem(name))
-            
-                # Unit Price
-                price_item = QTableWidgetItem(f"P{float(price):.2f}")
+                
+                # Type - Generic/Branded (column 2)
+                type_text = "Generic" if is_generic else "Branded"
+                self.products_table.setItem(row_idx, 2, QTableWidgetItem(type_text))
+                
+                # Category (column 3)
+                self.products_table.setItem(row_idx, 3, QTableWidgetItem(category))
+                
+                # Unit Measurement (column 4)
+                self.products_table.setItem(row_idx, 4, QTableWidgetItem(unit_measurement))
+                
+                # Unit Price (column 5)
+                price_item = QTableWidgetItem(f"₱{float(price):.2f}")
                 price_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                self.products_table.setItem(row_idx, 2, price_item)
-            
-                # Stock
+                self.products_table.setItem(row_idx, 5, price_item)
+                
+                # Stock (column 6)
                 stock_item = QTableWidgetItem(str(stock))
                 stock_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                self.products_table.setItem(row_idx, 3, stock_item)
-            
-                # Store the category in a hidden role
-                self.products_table.item(row_idx, 0).setData(Qt.UserRole, category)
+                self.products_table.setItem(row_idx, 6, stock_item)
+                
+                # Store additional data in hidden roles for reference
+                self.products_table.item(row_idx, 0).setData(Qt.UserRole, is_generic)
+                self.products_table.item(row_idx, 0).setData(Qt.UserRole + 1, unit_measurement)
+                self.products_table.item(row_idx, 0).setData(Qt.UserRole + 2, category)
         
             # Setup autocomplete
             completer = QCompleter(product_names)
@@ -446,7 +513,7 @@ class POSWidget(QWidget):
             
             # Filter by category
             if category_id is not None:
-                category = self.products_table.item(row, 0).data(Qt.UserRole)
+                category = self.products_table.item(row, 3).text()  # Category is now in column 3
                 if category != self.category_filter.currentText():
                     show_row = False
             
@@ -461,26 +528,47 @@ class POSWidget(QWidget):
             self.product_price_label.setText("-")
             self.product_stock_label.setText("-")
             self.add_to_cart_btn.setEnabled(False)
+            self.med_type_combo.setEnabled(False)
+            self.unit_input.setEnabled(False)
             return
         
         row = selected_rows[0].row()
         
         product_id = int(self.products_table.item(row, 0).text())
         product_name = self.products_table.item(row, 1).text()
-        price_text = self.products_table.item(row, 2).text()
-        unit_price = float(price_text.replace('P', ''))
-        stock = int(self.products_table.item(row, 3).text())
+        is_generic_text = self.products_table.item(row, 2).text()
+        category = self.products_table.item(row, 3).text()
+        unit_measurement = self.products_table.item(row, 4).text()
+        price_text = self.products_table.item(row, 5).text()
+        stock = int(self.products_table.item(row, 6).text())
+        
+        # Parse price from the text
+        unit_price = float(price_text.replace('₱', ''))
+        
+        # Convert text to boolean
+        is_generic = (is_generic_text == "Generic")
         
         self.selected_product = {
             'id': product_id,
             'name': product_name,
             'price': unit_price,
-            'stock': stock
+            'stock': stock,
+            'is_generic': is_generic,
+            'unit_measurement': unit_measurement,
+            'category': category
         }
         
         self.product_name_label.setText(product_name)
-        self.product_price_label.setText(f"P{unit_price:.2f}")
+        self.product_price_label.setText(f"₱{unit_price:.2f}")
         self.product_stock_label.setText(str(stock))
+        
+        # Enable medication type and unit inputs
+        self.med_type_combo.setEnabled(True)
+        self.unit_input.setEnabled(True)
+        
+        # Set values based on selected product
+        self.med_type_combo.setCurrentIndex(1 if is_generic else 0)  # 1 = Generic, 0 = Branded
+        self.unit_input.setText(unit_measurement)
         
         # Limit quantity spinner to available stock
         self.quantity_spinbox.setMaximum(stock)
@@ -505,6 +593,10 @@ class POSWidget(QWidget):
                                f"Only {self.selected_product['stock']} units available.")
             return
         
+        # Get current med type and unit values from inputs
+        is_generic = self.med_type_combo.currentIndex() == 1  # 1 = Generic, 0 = Branded
+        unit_measurement = self.unit_input.text().strip()
+        
         # Check if product already in cart
         for i, item in enumerate(self.cart_items):
             if item['id'] == self.selected_product['id']:
@@ -521,7 +613,11 @@ class POSWidget(QWidget):
                 
                 # Update cart table
                 self.cart_table.item(i, 3).setText(str(new_quantity))
-                self.cart_table.item(i, 4).setText(f"P{item['subtotal']:.2f}")
+                self.cart_table.item(i, 4).setText(f"₱{item['subtotal']:.2f}")
+                
+                # Also update medication details if they've changed
+                item['is_generic'] = is_generic
+                item['unit_measurement'] = unit_measurement
                 
                 self.update_totals()
                 return
@@ -533,7 +629,10 @@ class POSWidget(QWidget):
             'name': self.selected_product['name'],
             'price': self.selected_product['price'],
             'quantity': quantity,
-            'subtotal': subtotal
+            'subtotal': subtotal,
+            'is_generic': is_generic,
+            'unit_measurement': unit_measurement,
+            'category': self.selected_product['category']
         }
         
         self.cart_items.append(cart_item)
@@ -545,11 +644,14 @@ class POSWidget(QWidget):
         # Product ID
         self.cart_table.setItem(row, 0, QTableWidgetItem(str(cart_item['id'])))
         
-        # Product Name
-        self.cart_table.setItem(row, 1, QTableWidgetItem(cart_item['name']))
+        # Product Name (with unit measurement)
+        product_name = cart_item['name']
+        if unit_measurement:
+            product_name += f" ({unit_measurement})"
+        self.cart_table.setItem(row, 1, QTableWidgetItem(product_name))
         
         # Unit Price
-        price_item = QTableWidgetItem(f"P{cart_item['price']:.2f}")
+        price_item = QTableWidgetItem(f"₱{cart_item['price']:.2f}")
         price_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.cart_table.setItem(row, 2, price_item)
         
@@ -559,7 +661,7 @@ class POSWidget(QWidget):
         self.cart_table.setItem(row, 3, qty_item)
         
         # Subtotal
-        subtotal_item = QTableWidgetItem(f"P{cart_item['subtotal']:.2f}")
+        subtotal_item = QTableWidgetItem(f"₱{cart_item['subtotal']:.2f}")
         subtotal_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.cart_table.setItem(row, 4, subtotal_item)
         
@@ -702,18 +804,38 @@ class POSWidget(QWidget):
                 )
             
                 sale_id = cursor.fetchone()[0]
+                
+                # Check if sale_items table has the additional fields
+                cursor.execute("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'sale_items' AND column_name = 'is_generic'
+                """)
+                has_med_fields = cursor.fetchone() is not None
             
                 # Insert sale items and update stock
                 for item in self.cart_items:
-                    # Insert sale item
-                    cursor.execute(
-                        """
-                        INSERT INTO sale_items
-                        (sale_id, product_id, quantity, unit_price, subtotal)
-                        VALUES (%s, %s, %s, %s, %s)
-                        """,
-                        (sale_id, item['id'], item['quantity'], item['price'], item['subtotal'])
-                    )
+                    if has_med_fields:
+                        # Insert sale item with medication details
+                        cursor.execute(
+                            """
+                            INSERT INTO sale_items
+                            (sale_id, product_id, quantity, unit_price, subtotal, is_generic, unit_measurement)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
+                            """,
+                            (sale_id, item['id'], item['quantity'], item['price'], item['subtotal'],
+                             item.get('is_generic', False), item.get('unit_measurement', ''))
+                        )
+                    else:
+                        # Insert sale item without medication details
+                        cursor.execute(
+                            """
+                            INSERT INTO sale_items
+                            (sale_id, product_id, quantity, unit_price, subtotal)
+                            VALUES (%s, %s, %s, %s, %s)
+                            """,
+                            (sale_id, item['id'], item['quantity'], item['price'], item['subtotal'])
+                        )
                 
                     # Update stock
                     cursor.execute(
@@ -797,14 +919,34 @@ class POSWidget(QWidget):
             """
             cursor.execute(query, (sale_id,))
             sale = cursor.fetchone()
+            
+            # Check if sale_items table has medication fields
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'sale_items' AND column_name = 'is_generic'
+            """)
+            has_med_fields = cursor.fetchone() is not None
         
             # Get sale items
-            items_query = """
-                SELECT si.quantity, si.unit_price, si.subtotal, p.product_name
-                FROM sale_items si
-                JOIN products p ON si.product_id = p.product_id
-                WHERE si.sale_id = %s
-            """
+            if has_med_fields:
+                # Get items with medication details
+                items_query = """
+                    SELECT si.quantity, si.unit_price, si.subtotal, p.product_name,
+                           si.is_generic, si.unit_measurement
+                    FROM sale_items si
+                    JOIN products p ON si.product_id = p.product_id
+                    WHERE si.sale_id = %s
+                """
+            else:
+                # Get items without medication details
+                items_query = """
+                    SELECT si.quantity, si.unit_price, si.subtotal, p.product_name
+                    FROM sale_items si
+                    JOIN products p ON si.product_id = p.product_id
+                    WHERE si.sale_id = %s
+                """
+                
             cursor.execute(items_query, (sale_id,))
             items = cursor.fetchall()
         
@@ -880,23 +1022,49 @@ class POSWidget(QWidget):
             elements.append(info_table)
             elements.append(Spacer(1, 5*mm))
         
-            # Items table
-            items_data = [["Item", "Qty", "Price", "Amount"]]
-        
-            for item in items:
-                quantity, unit_price, subtotal, product_name = item
-                items_data.append([
-                    product_name,
-                    str(quantity),
-                    f"P{float(unit_price):.2f}",
-                    f"P{float(subtotal):.2f}"
-                ])
-        
-            items_table = Table(
-                items_data, 
-                colWidths=[70*mm, 15*mm, 25*mm, 25*mm],
-                repeatRows=1
-            )
+            # Items table - Handle with/without medication details
+            if has_med_fields:
+                items_data = [["Item", "Details", "Qty", "Price", "Amount"]]
+                
+                for item in items:
+                    quantity, unit_price, subtotal, product_name, is_generic, unit_measurement = item
+                    
+                    # Format medication details
+                    med_type = "Generic" if is_generic else "Branded"
+                    unit = unit_measurement if unit_measurement else "N/A"
+                    details = f"{med_type}, {unit}"
+                    
+                    items_data.append([
+                        product_name,
+                        details,
+                        str(quantity),
+                        f"₱{float(unit_price):.2f}",
+                        f"₱{float(subtotal):.2f}"
+                    ])
+                
+                items_table = Table(
+                    items_data, 
+                    colWidths=[50*mm, 25*mm, 10*mm, 20*mm, 25*mm],
+                    repeatRows=1
+                )
+            else:
+                items_data = [["Item", "Qty", "Price", "Amount"]]
+                
+                for item in items:
+                    quantity, unit_price, subtotal, product_name = item
+                    
+                    items_data.append([
+                        product_name,
+                        str(quantity),
+                        f"₱{float(unit_price):.2f}",
+                        f"₱{float(subtotal):.2f}"
+                    ])
+                
+                items_table = Table(
+                    items_data, 
+                    colWidths=[70*mm, 15*mm, 25*mm, 25*mm],
+                    repeatRows=1
+                )
         
             items_table.setStyle(TableStyle([
                 # Header styling
@@ -908,8 +1076,8 @@ class POSWidget(QWidget):
                 ('FONTSIZE', (0, 1), (-1, -1), 9),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
                 ('TOPPADDING', (0, 0), (-1, -1), 5),
-                ('ALIGN', (1, 0), (1, -1), 'CENTER'), # Qty centered
-                ('ALIGN', (2, 0), (3, -1), 'RIGHT'),  # Price and Amount right-aligned
+                ('ALIGN', (2 if has_med_fields else 1, 0), (2 if has_med_fields else 1, -1), 'CENTER'),  # Qty centered
+                ('ALIGN', (3 if has_med_fields else 2, 0), (-1, -1), 'RIGHT'),  # Price and Amount right-aligned
                 # Borders
                 ('GRID', (0, 0), (-1, 0), 1, colors.white),
                 ('LINEBELOW', (0, 0), (-1, 0), 1, colors.white),
@@ -923,12 +1091,12 @@ class POSWidget(QWidget):
             has_cash_details = sale[4] == "Cash" and sale[6] is not None
         
             totals_data = [
-                ["Total:", f"P{float(sale[3]):.2f}"]
+                ["Total:", f"₱{float(sale[3]):.2f}"]
             ]
         
             if has_cash_details:
-                totals_data.append(["Cash Tendered:", f"P{float(sale[6]):.2f}"])
-                totals_data.append(["Change:", f"P{float(sale[7]):.2f}"])
+                totals_data.append(["Cash Tendered:", f"₱{float(sale[6]):.2f}"])
+                totals_data.append(["Change:", f"₱{float(sale[7]):.2f}"])
 
             totals_table = Table(
                 totals_data, 

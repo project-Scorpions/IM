@@ -39,10 +39,21 @@ class ProductDialog(QDialog):
         self.name_input = QLineEdit()
         form_layout.addRow("Product Name*:", self.name_input)
         
+        # Medication Type (Branded/Generic)
+        self.type_combo = QComboBox()
+        self.type_combo.addItem("Branded", False)
+        self.type_combo.addItem("Generic", True)
+        form_layout.addRow("Medication Type*:", self.type_combo)
+        
         # Category
         self.category_combo = QComboBox()
         self.load_categories()
         form_layout.addRow("Category:", self.category_combo)
+        
+        # Unit Measurement
+        self.unit_input = QLineEdit()
+        self.unit_input.setPlaceholderText("e.g., mg, ml, g, tablet")
+        form_layout.addRow("Unit Measurement:", self.unit_input)
         
         # Description
         self.description_input = QLineEdit()
@@ -134,13 +145,42 @@ class ProductDialog(QDialog):
     def load_product_data(self):
         """Load product data if editing existing product"""
         try:
-            query = """
-                SELECT p.product_name, p.category_id, p.description, p.unit_price, 
-                       p.cost_price, p.stock_quantity, p.expiry_date, p.reorder_level, 
-                       p.supplier_id, p.is_active
-                FROM products p
-                WHERE p.product_id = %s
-            """
+            # Check if the database has the medication fields
+            connection = self.db.get_connection()
+            cursor = connection.cursor()
+            
+            try:
+                cursor.execute("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'products' AND column_name = 'is_generic'
+                """)
+                has_med_fields = cursor.fetchone() is not None
+            except:
+                has_med_fields = False
+            finally:
+                cursor.close()
+                self.db.release_connection(connection)
+                
+            if has_med_fields:
+                # Query with medication fields
+                query = """
+                    SELECT p.product_name, p.category_id, p.description, p.unit_price, 
+                           p.cost_price, p.stock_quantity, p.expiry_date, p.reorder_level, 
+                           p.supplier_id, p.is_active, p.is_generic, p.unit_measurement
+                    FROM products p
+                    WHERE p.product_id = %s
+                """
+            else:
+                # Query without medication fields
+                query = """
+                    SELECT p.product_name, p.category_id, p.description, p.unit_price, 
+                           p.cost_price, p.stock_quantity, p.expiry_date, p.reorder_level, 
+                           p.supplier_id, p.is_active
+                    FROM products p
+                    WHERE p.product_id = %s
+                """
+            
             product = self.db.execute_query(query, (self.product_id,), fetchone=True)
             
             if product:
@@ -171,11 +211,22 @@ class ProductDialog(QDialog):
                 
                 # Set active status
                 self.active_checkbox.setChecked(product[9] if product[9] is not None else True)
+                
+                # Set medication details if available
+                if has_med_fields and len(product) > 10:
+                    is_generic = product[10]
+                    self.type_combo.setCurrentIndex(1 if is_generic else 0)
+                    
+                    unit_measurement = product[11]
+                    self.unit_input.setText(unit_measurement or "")
+                
             else:
                 QMessageBox.warning(self, "Warning", "Product not found.")
                 self.reject()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load product data: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
             self.reject()
     
     def accept(self):
@@ -209,25 +260,72 @@ class ProductDialog(QDialog):
             supplier_id = self.supplier_combo.currentData()
             is_active = self.active_checkbox.isChecked()
             
+            # Get medication type and unit measurement
+            is_generic = self.type_combo.currentData()
+            unit_measurement = self.unit_input.text().strip()
+            
             # Get a direct connection
             connection = self.db.get_connection()
             cursor = connection.cursor()
             
+            # Check if the database has the medication fields
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'products' AND column_name = 'is_generic'
+            """)
+            has_med_fields = cursor.fetchone() is not None
+            
+            # If fields don't exist, try to add them
+            if not has_med_fields:
+                try:
+                    cursor.execute("""
+                        ALTER TABLE products 
+                        ADD COLUMN IF NOT EXISTS is_generic BOOLEAN DEFAULT FALSE,
+                        ADD COLUMN IF NOT EXISTS unit_measurement VARCHAR(50)
+                    """)
+                    connection.commit()
+                    has_med_fields = True
+                except:
+                    # If we can't alter the table, continue without the fields
+                    connection.rollback()
+                    has_med_fields = False
+            
             if self.product_id:
                 # Update existing product
-                query = """
-                    UPDATE products
-                    SET product_name = %s, category_id = %s, description = %s,
-                        unit_price = %s, cost_price = %s, stock_quantity = %s,
-                        expiry_date = %s, reorder_level = %s, supplier_id = %s,
-                        is_active = %s, updated_at = CURRENT_TIMESTAMP
-                    WHERE product_id = %s
-                """
-                cursor.execute(
-                    query, 
-                    (product_name, category_id, description, unit_price, cost_price, 
-                     stock_quantity, expiry_date, reorder_level, supplier_id, is_active, self.product_id)
-                )
+                if has_med_fields:
+                    # Update with medication fields
+                    query = """
+                        UPDATE products
+                        SET product_name = %s, category_id = %s, description = %s,
+                            unit_price = %s, cost_price = %s, stock_quantity = %s,
+                            expiry_date = %s, reorder_level = %s, supplier_id = %s,
+                            is_active = %s, updated_at = CURRENT_TIMESTAMP,
+                            is_generic = %s, unit_measurement = %s
+                        WHERE product_id = %s
+                    """
+                    cursor.execute(
+                        query, 
+                        (product_name, category_id, description, unit_price, cost_price, 
+                         stock_quantity, expiry_date, reorder_level, supplier_id, is_active,
+                         is_generic, unit_measurement, self.product_id)
+                    )
+                else:
+                    # Update without medication fields
+                    query = """
+                        UPDATE products
+                        SET product_name = %s, category_id = %s, description = %s,
+                            unit_price = %s, cost_price = %s, stock_quantity = %s,
+                            expiry_date = %s, reorder_level = %s, supplier_id = %s,
+                            is_active = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE product_id = %s
+                    """
+                    cursor.execute(
+                        query, 
+                        (product_name, category_id, description, unit_price, cost_price, 
+                         stock_quantity, expiry_date, reorder_level, supplier_id, is_active,
+                         self.product_id)
+                    )
                 
                 # Log activity
                 action_details = f"Updated product: {product_name}"
@@ -244,18 +342,36 @@ class ProductDialog(QDialog):
                 
             else:
                 # Insert new product
-                query = """
-                    INSERT INTO products
-                    (product_name, category_id, description, unit_price, cost_price,
-                     stock_quantity, expiry_date, reorder_level, supplier_id, is_active)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    RETURNING product_id
-                """
-                cursor.execute(
-                    query, 
-                    (product_name, category_id, description, unit_price, cost_price, 
-                     stock_quantity, expiry_date, reorder_level, supplier_id, is_active)
-                )
+                if has_med_fields:
+                    # Insert with medication fields
+                    query = """
+                        INSERT INTO products
+                        (product_name, category_id, description, unit_price, cost_price,
+                         stock_quantity, expiry_date, reorder_level, supplier_id, is_active,
+                         is_generic, unit_measurement)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING product_id
+                    """
+                    cursor.execute(
+                        query, 
+                        (product_name, category_id, description, unit_price, cost_price, 
+                         stock_quantity, expiry_date, reorder_level, supplier_id, is_active,
+                         is_generic, unit_measurement)
+                    )
+                else:
+                    # Insert without medication fields
+                    query = """
+                        INSERT INTO products
+                        (product_name, category_id, description, unit_price, cost_price,
+                         stock_quantity, expiry_date, reorder_level, supplier_id, is_active)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING product_id
+                    """
+                    cursor.execute(
+                        query, 
+                        (product_name, category_id, description, unit_price, cost_price, 
+                         stock_quantity, expiry_date, reorder_level, supplier_id, is_active)
+                    )
                 
                 result = cursor.fetchone()
                 new_product_id = result[0]
@@ -362,82 +478,82 @@ class CategoryDialog(QDialog):
             self.reject()
     
     def accept(self):
-     """Handle dialog acceptance (OK button)"""
-     # Validate input
-     category_name = self.name_input.text().strip()
-     if not category_name:
-        QMessageBox.warning(self, "Validation Error", "Category name is required.")
-        return
-    
-     # Create direct database connection for this operation
-     connection = None
-     cursor = None
-     try:
-        # Get values
-        description = self.description_input.text().strip()
+        """Handle dialog acceptance (OK button)"""
+        # Validate input
+        category_name = self.name_input.text().strip()
+        if not category_name:
+            QMessageBox.warning(self, "Validation Error", "Category name is required.")
+            return
         
-        # Get a direct connection
-        connection = self.db.get_connection()
-        cursor = connection.cursor()
-        
-        if self.category_id:
-            # Update existing category
-            query = """
-                UPDATE categories
-                SET name = %s, description = %s, updated_at = CURRENT_TIMESTAMP
-                WHERE category_id = %s
-            """
-            cursor.execute(query, (category_name, description, self.category_id))
-        else:
-            # Insert new category
-            query = """
-                INSERT INTO categories (name, description)
-                VALUES (%s, %s)
-                RETURNING category_id
-            """
-            cursor.execute(query, (category_name, description))
-            result = cursor.fetchone()
-            new_category_id = result[0]
-            self.category_id = new_category_id  # Store for activity logging
-        
-        # Explicitly commit the transaction
-        connection.commit()
-        
-        # Log activity after successful commit
+        # Create direct database connection for this operation
+        connection = None
+        cursor = None
         try:
+            # Get values
+            description = self.description_input.text().strip()
+            
+            # Get a direct connection
+            connection = self.db.get_connection()
+            cursor = connection.cursor()
+            
             if self.category_id:
-                action_type = "update" if self.category_id else "insert"
-                self.auth.log_activity(
-                    self.user['user_id'],
-                    action_type,
-                    "categories",
-                    self.category_id,
-                    f"{'Updated' if action_type == 'update' else 'Created new'} category: {category_name}"
-                )
-        except Exception as log_error:
-            # Just log the error but don't stop the process
-            print(f"Activity logging error: {log_error}")
-        
-        QMessageBox.information(
-            self, 
-            "Success", 
-            f"Category '{category_name}' {'updated' if self.category_id else 'created'} successfully."
-        )
-        
-        super().accept()
-        
-     except Exception as e:
-        if connection:
-            connection.rollback()
-        print(f"Error in accept method: {str(e)}")
-        import traceback
-        print(traceback.format_exc())
-        QMessageBox.critical(self, "Error", f"Failed to save category: {str(e)}")
-     finally:
-        if cursor:
-            cursor.close()
-        if connection:
-            self.db.release_connection(connection)
+                # Update existing category
+                query = """
+                    UPDATE categories
+                    SET name = %s, description = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE category_id = %s
+                """
+                cursor.execute(query, (category_name, description, self.category_id))
+            else:
+                # Insert new category
+                query = """
+                    INSERT INTO categories (name, description)
+                    VALUES (%s, %s)
+                    RETURNING category_id
+                """
+                cursor.execute(query, (category_name, description))
+                result = cursor.fetchone()
+                new_category_id = result[0]
+                self.category_id = new_category_id  # Store for activity logging
+            
+            # Explicitly commit the transaction
+            connection.commit()
+            
+            # Log activity after successful commit
+            try:
+                if self.category_id:
+                    action_type = "update" if self.category_id else "insert"
+                    self.auth.log_activity(
+                        self.user['user_id'],
+                        action_type,
+                        "categories",
+                        self.category_id,
+                        f"{'Updated' if action_type == 'update' else 'Created new'} category: {category_name}"
+                    )
+            except Exception as log_error:
+                # Just log the error but don't stop the process
+                print(f"Activity logging error: {log_error}")
+            
+            QMessageBox.information(
+                self, 
+                "Success", 
+                f"Category '{category_name}' {'updated' if self.category_id else 'created'} successfully."
+            )
+            
+            super().accept()
+            
+        except Exception as e:
+            if connection:
+                connection.rollback()
+            print(f"Error in accept method: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+            QMessageBox.critical(self, "Error", f"Failed to save category: {str(e)}")
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                self.db.release_connection(connection)
 
 
 class InventoryManagementWidget(QWidget):
@@ -478,6 +594,14 @@ class InventoryManagementWidget(QWidget):
         self.category_filter.currentIndexChanged.connect(self.filter_products)
         search_layout.addWidget(self.category_filter)
         
+        # Medication Type filter
+        self.type_filter = QComboBox()
+        self.type_filter.addItem("All Types", None)
+        self.type_filter.addItem("Branded", "branded")
+        self.type_filter.addItem("Generic", "generic")
+        self.type_filter.currentIndexChanged.connect(self.filter_products)
+        search_layout.addWidget(self.type_filter)
+        
         self.stock_filter = QComboBox()
         self.stock_filter.addItem("All Stock Levels", None)
         self.stock_filter.addItem("Low Stock", "low")
@@ -504,12 +628,11 @@ class InventoryManagementWidget(QWidget):
         
         products_layout.addWidget(search_frame)
         
-        # Products table
+        # Products table - UPDATED with new columns
         self.products_table = QTableWidget()
-        self.products_table.setColumnCount(9)
+        self.products_table.setColumnCount(10)
         self.products_table.setHorizontalHeaderLabels([
-            "ID", "Product Name", "Category", "Unit Price", "Cost Price", 
-            "Stock", "Expiry Date", "Status", "Actions"
+            "ID", "Name", "Type", "Category", "Unit", "Price", "Stock", "Expiry", "Status", "Actions"
         ])
         self.products_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.products_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
@@ -579,9 +702,9 @@ class InventoryManagementWidget(QWidget):
         
         # Low stock table
         self.low_stock_table = QTableWidget()
-        self.low_stock_table.setColumnCount(5)
+        self.low_stock_table.setColumnCount(6)
         self.low_stock_table.setHorizontalHeaderLabels([
-            "Product Name", "Category", "Current Stock", "Reorder Level", "Actions"
+            "Product Name", "Type", "Category", "Current Stock", "Reorder Level", "Actions"
         ])
         self.low_stock_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.low_stock_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
@@ -590,9 +713,9 @@ class InventoryManagementWidget(QWidget):
         
         # Expiring products table
         self.expiring_table = QTableWidget()
-        self.expiring_table.setColumnCount(5)
+        self.expiring_table.setColumnCount(6)
         self.expiring_table.setHorizontalHeaderLabels([
-            "Product Name", "Category", "Expiry Date", "Days Remaining", "Actions"
+            "Product Name", "Type", "Category", "Expiry Date", "Days Remaining", "Actions"
         ])
         self.expiring_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.expiring_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
@@ -620,13 +743,41 @@ class InventoryManagementWidget(QWidget):
     def load_products(self):
         """Load products from database into table"""
         try:
-            query = """
-                SELECT p.product_id, p.product_name, c.name, p.unit_price, p.cost_price,
-                       p.stock_quantity, p.expiry_date, p.reorder_level, p.is_active
-                FROM products p
-                LEFT JOIN categories c ON p.category_id = c.category_id
-                ORDER BY p.is_active DESC, p.product_name
-            """
+            # Check if the database has the new medication fields
+            connection = self.db.get_connection()
+            cursor = connection.cursor()
+            
+            try:
+                cursor.execute("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'products' AND column_name = 'is_generic'
+                """)
+                has_med_fields = cursor.fetchone() is not None
+            except:
+                has_med_fields = False
+            finally:
+                cursor.close()
+                self.db.release_connection(connection)
+            
+            # Update query based on whether the fields exist
+            if has_med_fields:
+                query = """
+                    SELECT p.product_id, p.product_name, p.is_generic, c.name, p.unit_measurement,
+                           p.unit_price, p.stock_quantity, p.expiry_date, p.reorder_level, p.is_active
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.category_id
+                    ORDER BY p.is_active DESC, p.product_name
+                """
+            else:
+                query = """
+                    SELECT p.product_id, p.product_name, NULL as is_generic, c.name, NULL as unit_measurement,
+                           p.unit_price, p.stock_quantity, p.expiry_date, p.reorder_level, p.is_active
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.category_id
+                    ORDER BY p.is_active DESC, p.product_name
+                """
+            
             products = self.db.execute_query(query, fetchall=True)
             
             self.products_table.setRowCount(0)
@@ -634,34 +785,45 @@ class InventoryManagementWidget(QWidget):
             for row_idx, product in enumerate(products):
                 self.products_table.insertRow(row_idx)
                 
+                product_id = product[0]
+                name = product[1]
+                is_generic = product[2]
+                category = product[3] or "Uncategorized"
+                unit_measurement = product[4] or ""
+                unit_price = product[5]
+                stock_qty = product[6]
+                expiry_date = product[7]
+                reorder_level = product[8]
+                is_active = product[9]
+                
                 # Product ID
-                self.products_table.setItem(row_idx, 0, QTableWidgetItem(str(product[0])))
+                self.products_table.setItem(row_idx, 0, QTableWidgetItem(str(product_id)))
                 
                 # Product Name
-                product_name_item = QTableWidgetItem(product[1])
-                if not product[8]:  # If not active
+                product_name_item = QTableWidgetItem(name)
+                if not is_active:  # If not active
                     product_name_item.setForeground(QColor("#888888"))  # Grey text for inactive
                     font = product_name_item.font()
                     font.setStrikeOut(True)
                     product_name_item.setFont(font)
                 self.products_table.setItem(row_idx, 1, product_name_item)
                 
+                # Medication Type (Branded/Generic)
+                type_text = "Generic" if is_generic else "Branded"
+                self.products_table.setItem(row_idx, 2, QTableWidgetItem(type_text))
+                
                 # Category
-                self.products_table.setItem(row_idx, 2, QTableWidgetItem(product[2] or "Uncategorized"))
+                self.products_table.setItem(row_idx, 3, QTableWidgetItem(category))
+                
+                # Unit Measurement
+                self.products_table.setItem(row_idx, 4, QTableWidgetItem(unit_measurement))
                 
                 # Unit Price
-                price_item = QTableWidgetItem(f"P{float(product[3]):.2f}")
+                price_item = QTableWidgetItem(f"₱{float(unit_price):.2f}")
                 price_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                self.products_table.setItem(row_idx, 3, price_item)
-                
-                # Cost Price
-                cost_item = QTableWidgetItem(f"P{float(product[4]):.2f}")
-                cost_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                self.products_table.setItem(row_idx, 4, cost_item)
+                self.products_table.setItem(row_idx, 5, price_item)
                 
                 # Stock Quantity
-                stock_qty = int(product[5])
-                reorder_level = int(product[7])
                 stock_item = QTableWidgetItem(str(stock_qty))
                 stock_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
                 
@@ -670,10 +832,9 @@ class InventoryManagementWidget(QWidget):
                 elif stock_qty < reorder_level:
                     stock_item.setBackground(QColor("#FFFFCC"))  # Light yellow for low stock
                 
-                self.products_table.setItem(row_idx, 5, stock_item)
+                self.products_table.setItem(row_idx, 6, stock_item)
                 
                 # Expiry Date
-                expiry_date = product[6]
                 if expiry_date:
                     days_to_expiry = (expiry_date - QDate.currentDate().toPyDate()).days
                     expiry_item = QTableWidgetItem(expiry_date.strftime("%Y-%m-%d"))
@@ -683,12 +844,12 @@ class InventoryManagementWidget(QWidget):
                     elif days_to_expiry < 30:
                         expiry_item.setBackground(QColor("#FFCC99"))  # Orange for expiring soon
                     
-                    self.products_table.setItem(row_idx, 6, expiry_item)
+                    self.products_table.setItem(row_idx, 7, expiry_item)
                 else:
-                    self.products_table.setItem(row_idx, 6, QTableWidgetItem("N/A"))
+                    self.products_table.setItem(row_idx, 7, QTableWidgetItem("N/A"))
                 
                 # Status
-                if not product[8]:
+                if not is_active:
                     status = "Inactive"
                     status_color = "#DDDDDD"  # Grey for inactive
                 elif stock_qty <= 0:
@@ -709,7 +870,7 @@ class InventoryManagementWidget(QWidget):
                 
                 status_item = QTableWidgetItem(status)
                 status_item.setBackground(QColor(status_color))
-                self.products_table.setItem(row_idx, 7, status_item)
+                self.products_table.setItem(row_idx, 8, status_item)
                 
                 # Actions
                 actions_widget = QWidget()
@@ -721,23 +882,25 @@ class InventoryManagementWidget(QWidget):
                 edit_btn.setIcon(QIcon("resources/icons/edit.png"))
                 edit_btn.setToolTip("Edit Product")
                 edit_btn.setMaximumWidth(30)
-                edit_btn.clicked.connect(lambda _, pid=product[0]: self.edit_product(pid))
+                edit_btn.clicked.connect(lambda _, pid=product_id: self.edit_product(pid))
                 actions_layout.addWidget(edit_btn)
                 
                 delete_btn = QPushButton()
                 delete_btn.setIcon(QIcon("resources/icons/delete.png"))
                 delete_btn.setToolTip("Delete Product")
                 delete_btn.setMaximumWidth(30)
-                delete_btn.clicked.connect(lambda _, pid=product[0], name=product[1]: self.delete_product(pid, name))
+                delete_btn.clicked.connect(lambda _, pid=product_id, name=name: self.delete_product(pid, name))
                 actions_layout.addWidget(delete_btn)
                 
-                self.products_table.setCellWidget(row_idx, 8, actions_widget)
+                self.products_table.setCellWidget(row_idx, 9, actions_widget)
             
             self.products_table.resizeColumnsToContents()
             self.products_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
             
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load products: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
     
     def load_category_filter(self):
         """Load categories into filter dropdown"""
@@ -754,6 +917,7 @@ class InventoryManagementWidget(QWidget):
         """Filter products based on search criteria"""
         search_text = self.search_input.text().lower()
         category_id = self.category_filter.currentData()
+        type_filter = self.type_filter.currentData()
         stock_filter = self.stock_filter.currentData()
         expiry_filter = self.expiry_filter.currentData()
         status_filter = self.status_filter.currentData()
@@ -766,9 +930,17 @@ class InventoryManagementWidget(QWidget):
             if search_text and search_text not in product_name:
                 show_row = False
             
+            # Filter by medication type (branded/generic)
+            if type_filter:
+                type_text = self.products_table.item(row, 2).text().lower()
+                if type_filter == "branded" and type_text != "branded":
+                    show_row = False
+                elif type_filter == "generic" and type_text != "generic":
+                    show_row = False
+            
             # Filter by category
             if category_id is not None:
-                category_name = self.products_table.item(row, 2).text()
+                category_name = self.products_table.item(row, 3).text()
                 category_match = False
                 
                 for i in range(self.category_filter.count()):
@@ -782,7 +954,7 @@ class InventoryManagementWidget(QWidget):
             
             # Filter by stock level
             if stock_filter:
-                stock_qty = int(self.products_table.item(row, 5).text())
+                stock_qty = int(self.products_table.item(row, 6).text())
                 reorder_level = 10  # Default reorder level
                 
                 if stock_filter == "low" and stock_qty > reorder_level:
@@ -793,8 +965,8 @@ class InventoryManagementWidget(QWidget):
                     show_row = False
             
             # Filter by expiry date
-            if expiry_filter and self.products_table.item(row, 6).text() != "N/A":
-                expiry_date = QDate.fromString(self.products_table.item(row, 6).text(), "yyyy-MM-dd")
+            if expiry_filter and self.products_table.item(row, 7).text() != "N/A":
+                expiry_date = QDate.fromString(self.products_table.item(row, 7).text(), "yyyy-MM-dd")
                 days_to_expiry = QDate.currentDate().daysTo(expiry_date)
                 
                 if expiry_filter == "expired" and days_to_expiry >= 0:
@@ -804,9 +976,9 @@ class InventoryManagementWidget(QWidget):
                 elif expiry_filter == "valid" and days_to_expiry < 0:
                     show_row = False
             
-            # Filter by status - use column 7 which has the status text
+            # Filter by status - use column 8 which has the status text
             if status_filter is not None:
-                status_text = self.products_table.item(row, 7).text()
+                status_text = self.products_table.item(row, 8).text()
                 is_active = status_text != "Inactive"  # Any status except "Inactive" is considered active
                 
                 if status_filter == "active" and not is_active:
@@ -897,6 +1069,8 @@ class InventoryManagementWidget(QWidget):
                 
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to delete product: {str(e)}")
+                import traceback
+                print(traceback.format_exc())
     
     def load_categories(self):
         """Load categories into the tree widget"""
@@ -952,6 +1126,8 @@ class InventoryManagementWidget(QWidget):
             
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load categories: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
     
     def add_category(self):
         """Add a new category"""
@@ -1013,18 +1189,20 @@ class InventoryManagementWidget(QWidget):
                 
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to delete category: {str(e)}")
+                import traceback
+                print(traceback.format_exc())
     
     def manage_categories(self):
-     """Open the categories tab"""
-     # Find the QTabWidget directly within this widget's children
-     for widget in self.children():
-        if isinstance(widget, QTabWidget):
-            widget.setCurrentIndex(1)  # Switch to Categories tab
-            return
-    
-     # If we get here, we couldn't find the tab widget
-     QMessageBox.information(self, "Categories", 
-        "Please click on the 'Categories' tab to manage categories.")
+        """Open the categories tab"""
+        # Find the QTabWidget directly within this widget's children
+        for widget in self.children():
+            if isinstance(widget, QTabWidget):
+                widget.setCurrentIndex(1)  # Switch to Categories tab
+                return
+        
+        # If we get here, we couldn't find the tab widget
+        QMessageBox.information(self, "Categories", 
+            "Please click on the 'Categories' tab to manage categories.")
     
     def load_alerts(self):
         """Load stock alerts (low stock and expiring products)"""
@@ -1034,13 +1212,43 @@ class InventoryManagementWidget(QWidget):
     def load_low_stock(self):
         """Load low stock items"""
         try:
-            query = """
-                SELECT p.product_id, p.product_name, c.name, p.stock_quantity, p.reorder_level
-                FROM products p
-                LEFT JOIN categories c ON p.category_id = c.category_id
-                WHERE p.stock_quantity <= p.reorder_level AND p.is_active = TRUE
-                ORDER BY (p.reorder_level - p.stock_quantity) DESC, p.product_name
-            """
+            # Check if the database has the new medication fields
+            connection = self.db.get_connection()
+            cursor = connection.cursor()
+            
+            try:
+                cursor.execute("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'products' AND column_name = 'is_generic'
+                """)
+                has_med_fields = cursor.fetchone() is not None
+            except:
+                has_med_fields = False
+            finally:
+                cursor.close()
+                self.db.release_connection(connection)
+            
+            # Update query based on whether the fields exist
+            if has_med_fields:
+                query = """
+                    SELECT p.product_id, p.product_name, p.is_generic, c.name, 
+                           p.stock_quantity, p.reorder_level
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.category_id
+                    WHERE p.stock_quantity <= p.reorder_level AND p.is_active = TRUE
+                    ORDER BY (p.reorder_level - p.stock_quantity) DESC, p.product_name
+                """
+            else:
+                query = """
+                    SELECT p.product_id, p.product_name, NULL as is_generic, c.name, 
+                           p.stock_quantity, p.reorder_level
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.category_id
+                    WHERE p.stock_quantity <= p.reorder_level AND p.is_active = TRUE
+                    ORDER BY (p.reorder_level - p.stock_quantity) DESC, p.product_name
+                """
+            
             low_stock = self.db.execute_query(query, fetchall=True)
             
             self.low_stock_table.setRowCount(0)
@@ -1048,13 +1256,17 @@ class InventoryManagementWidget(QWidget):
             for row_idx, product in enumerate(low_stock):
                 self.low_stock_table.insertRow(row_idx)
                 
-                product_id, product_name, category_name, stock_qty, reorder_level = product
+                product_id, product_name, is_generic, category_name, stock_qty, reorder_level = product
                 
                 # Product Name
                 self.low_stock_table.setItem(row_idx, 0, QTableWidgetItem(product_name))
                 
+                # Medication Type
+                type_text = "Generic" if is_generic else "Branded"
+                self.low_stock_table.setItem(row_idx, 1, QTableWidgetItem(type_text))
+                
                 # Category
-                self.low_stock_table.setItem(row_idx, 1, QTableWidgetItem(category_name or "Uncategorized"))
+                self.low_stock_table.setItem(row_idx, 2, QTableWidgetItem(category_name or "Uncategorized"))
                 
                 # Current Stock
                 stock_item = QTableWidgetItem(str(stock_qty))
@@ -1065,12 +1277,12 @@ class InventoryManagementWidget(QWidget):
                 else:
                     stock_item.setBackground(QColor("#FFFFCC"))  # Light yellow for low stock
                 
-                self.low_stock_table.setItem(row_idx, 2, stock_item)
+                self.low_stock_table.setItem(row_idx, 3, stock_item)
                 
                 # Reorder Level
                 reorder_item = QTableWidgetItem(str(reorder_level))
                 reorder_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                self.low_stock_table.setItem(row_idx, 3, reorder_item)
+                self.low_stock_table.setItem(row_idx, 4, reorder_item)
                 
                 # Actions
                 actions_widget = QWidget()
@@ -1085,21 +1297,51 @@ class InventoryManagementWidget(QWidget):
                 edit_btn.clicked.connect(lambda _, pid=product_id: self.edit_product(pid))
                 actions_layout.addWidget(edit_btn)
                 
-                self.low_stock_table.setCellWidget(row_idx, 4, actions_widget)
+                self.low_stock_table.setCellWidget(row_idx, 5, actions_widget)
             
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load low stock items: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
     
     def load_expiring_products(self):
         """Load expiring products"""
         try:
-            query = """
-                SELECT p.product_id, p.product_name, c.name, p.expiry_date
-                FROM products p
-                LEFT JOIN categories c ON p.category_id = c.category_id
-                WHERE p.expiry_date IS NOT NULL AND p.expiry_date <= %s AND p.is_active = TRUE
-                ORDER BY p.expiry_date, p.product_name
-            """
+            # Check if the database has the new medication fields
+            connection = self.db.get_connection()
+            cursor = connection.cursor()
+            
+            try:
+                cursor.execute("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'products' AND column_name = 'is_generic'
+                """)
+                has_med_fields = cursor.fetchone() is not None
+            except:
+                has_med_fields = False
+            finally:
+                cursor.close()
+                self.db.release_connection(connection)
+            
+            # Update query based on whether the fields exist
+            if has_med_fields:
+                query = """
+                    SELECT p.product_id, p.product_name, p.is_generic, c.name, p.expiry_date
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.category_id
+                    WHERE p.expiry_date IS NOT NULL AND p.expiry_date <= %s AND p.is_active = TRUE
+                    ORDER BY p.expiry_date, p.product_name
+                """
+            else:
+                query = """
+                    SELECT p.product_id, p.product_name, NULL as is_generic, c.name, p.expiry_date
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.category_id
+                    WHERE p.expiry_date IS NOT NULL AND p.expiry_date <= %s AND p.is_active = TRUE
+                    ORDER BY p.expiry_date, p.product_name
+                """
+            
             thirty_days_later = QDate.currentDate().addDays(30).toPyDate()
             expiring = self.db.execute_query(query, (thirty_days_later,), fetchall=True)
             
@@ -1108,13 +1350,17 @@ class InventoryManagementWidget(QWidget):
             for row_idx, product in enumerate(expiring):
                 self.expiring_table.insertRow(row_idx)
                 
-                product_id, product_name, category_name, expiry_date = product
+                product_id, product_name, is_generic, category_name, expiry_date = product
                 
                 # Product Name
                 self.expiring_table.setItem(row_idx, 0, QTableWidgetItem(product_name))
                 
+                # Medication Type
+                type_text = "Generic" if is_generic else "Branded"
+                self.expiring_table.setItem(row_idx, 1, QTableWidgetItem(type_text))
+                
                 # Category
-                self.expiring_table.setItem(row_idx, 1, QTableWidgetItem(category_name or "Uncategorized"))
+                self.expiring_table.setItem(row_idx, 2, QTableWidgetItem(category_name or "Uncategorized"))
                 
                 # Expiry Date
                 expiry_item = QTableWidgetItem(expiry_date.strftime("%Y-%m-%d"))
@@ -1125,7 +1371,7 @@ class InventoryManagementWidget(QWidget):
                 else:
                     expiry_item.setBackground(QColor("#FFCC99"))  # Orange for expiring soon
                 
-                self.expiring_table.setItem(row_idx, 2, expiry_item)
+                self.expiring_table.setItem(row_idx, 3, expiry_item)
                 
                 # Days Remaining
                 days_item = QTableWidgetItem(str(days_to_expiry) if days_to_expiry >= 0 else "Expired")
@@ -1136,7 +1382,7 @@ class InventoryManagementWidget(QWidget):
                 else:
                     days_item.setBackground(QColor("#FFCC99"))  # Orange for expiring soon
                 
-                self.expiring_table.setItem(row_idx, 3, days_item)
+                self.expiring_table.setItem(row_idx, 4, days_item)
                 
                 # Actions
                 actions_widget = QWidget()
@@ -1151,10 +1397,12 @@ class InventoryManagementWidget(QWidget):
                 edit_btn.clicked.connect(lambda _, pid=product_id: self.edit_product(pid))
                 actions_layout.addWidget(edit_btn)
                 
-                self.expiring_table.setCellWidget(row_idx, 4, actions_widget)
+                self.expiring_table.setCellWidget(row_idx, 5, actions_widget)
             
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load expiring products: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
     
     def export_inventory(self):
         """Export inventory to Excel"""
@@ -1174,41 +1422,176 @@ class InventoryManagementWidget(QWidget):
             if not filename:
                 return
             
+            # Check if the database has the new medication fields
+            connection = self.db.get_connection()
+            cursor = connection.cursor()
+            
+            try:
+                cursor.execute("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'products' AND column_name = 'is_generic'
+                """)
+                has_med_fields = cursor.fetchone() is not None
+            except:
+                has_med_fields = False
+            finally:
+                cursor.close()
+                self.db.release_connection(connection)
+            
             # Fetch data from database
-            query = """
-                SELECT p.product_id, p.product_name, c.name as category, p.description,
-                       p.unit_price, p.cost_price, p.stock_quantity, p.expiry_date,
-                       p.reorder_level, s.name as supplier, p.is_active
-                FROM products p
-                LEFT JOIN categories c ON p.category_id = c.category_id
-                LEFT JOIN suppliers s ON p.supplier_id = s.supplier_id
-                ORDER BY p.product_name
-            """
-            products = self.db.execute_query(query, fetchall=True)
-            
-            # Convert to pandas dataframe
-            columns = [
-                "Product ID", "Product Name", "Category", "Description",
-                "Unit Price", "Cost Price", "Stock Quantity", "Expiry Date",
-                "Reorder Level", "Supplier", "Status"
-            ]
-            
-            df = pd.DataFrame(products, columns=columns)
-            
-            # Convert is_active boolean to Status text
-            df['Status'] = df['is_active'].apply(lambda x: 'Active' if x else 'Inactive')
-            
-            # Write to Excel
-            with pd.ExcelWriter(filename, engine='openpyxl') as writer:
-                df.to_excel(writer, sheet_name='Inventory', index=False)
+            if has_med_fields:
+                query = """
+                    SELECT p.product_id, p.product_name, p.is_generic, c.name as category, 
+                           p.unit_measurement, p.description, p.unit_price, p.cost_price, 
+                           p.stock_quantity, p.expiry_date, p.reorder_level, s.name as supplier, 
+                           p.is_active
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.category_id
+                    LEFT JOIN suppliers s ON p.supplier_id = s.supplier_id
+                    ORDER BY p.product_name
+                """
                 
-                # Auto-adjust columns' width
-                for column in df:
-                    column_width = max(df[column].astype(str).map(len).max(), len(column))
-                    col_idx = df.columns.get_loc(column)
-                    writer.sheets['Inventory'].column_dimensions[chr(65 + col_idx)].width = column_width + 2
+                products = self.db.execute_query(query, fetchall=True)
+                
+                # Convert to pandas dataframe
+                columns = [
+                    "Product ID", "Product Name", "Is Generic", "Category", "Unit Measurement",
+                    "Description", "Unit Price", "Cost Price", "Stock Quantity", 
+                    "Expiry Date", "Reorder Level", "Supplier", "Is Active"
+                ]
+                
+                df = pd.DataFrame(products, columns=columns)
+                
+                # Convert boolean columns to text
+                df['Type'] = df['Is Generic'].apply(lambda x: 'Generic' if x else 'Branded')
+                df['Status'] = df['Is Active'].apply(lambda x: 'Active' if x else 'Inactive')
+                
+                # Drop original boolean columns
+                df = df.drop(['Is Generic', 'Is Active'], axis=1)
+                                # Reorder columns for better readability
+                df = df[['Product ID', 'Product Name', 'Type', 'Category', 'Unit Measurement',
+                        'Description', 'Unit Price', 'Cost Price', 'Stock Quantity',
+                        'Expiry Date', 'Reorder Level', 'Supplier', 'Status']]
+            else:
+                # Original query without medication details
+                query = """
+                    SELECT p.product_id, p.product_name, c.name as category, p.description,
+                           p.unit_price, p.cost_price, p.stock_quantity, p.expiry_date,
+                           p.reorder_level, s.name as supplier, p.is_active
+                    FROM products p
+                    LEFT JOIN categories c ON p.category_id = c.category_id
+                    LEFT JOIN suppliers s ON p.supplier_id = s.supplier_id
+                    ORDER BY p.product_name
+                """
+                products = self.db.execute_query(query, fetchall=True)
+                
+                # Convert to pandas dataframe
+                columns = [
+                    "Product ID", "Product Name", "Category", "Description",
+                    "Unit Price", "Cost Price", "Stock Quantity", "Expiry Date",
+                    "Reorder Level", "Supplier", "Is Active"
+                ]
+                
+                df = pd.DataFrame(products, columns=columns)
+                
+                # Convert boolean column to text
+                df['Status'] = df['Is Active'].apply(lambda x: 'Active' if x else 'Inactive')
+                
+                # Drop original boolean column
+                df = df.drop('Is Active', axis=1)
+                
+                # Add Type and Unit Measurement columns with empty values
+                df.insert(2, 'Type', 'Branded')  # Default to Branded
+                df.insert(4, 'Unit Measurement', '')
+                
+                # Reorder columns for better readability
+                df = df[['Product ID', 'Product Name', 'Type', 'Category', 'Unit Measurement',
+                        'Description', 'Unit Price', 'Cost Price', 'Stock Quantity',
+                        'Expiry Date', 'Reorder Level', 'Supplier', 'Status']]
             
-            QMessageBox.information(self, "Export Successful", f"Inventory exported successfully to {filename}")
+            # Format date columns
+            if 'Expiry Date' in df.columns:
+                df['Expiry Date'] = df['Expiry Date'].apply(
+                    lambda x: x.strftime('%Y-%m-%d') if pd.notnull(x) else 'N/A'
+                )
+            
+            # Format numeric columns
+            for col in ['Unit Price', 'Cost Price']:
+                if col in df.columns:
+                    df[col] = df[col].apply(lambda x: f"₱{float(x):.2f}" if pd.notnull(x) else '₱0.00')
+            
+            # Add export metadata
+            metadata_df = pd.DataFrame([
+                {'Metadata': 'Export Date', 'Value': datetime.now().strftime('%Y-%m-%d %H:%M:%S')},
+                {'Metadata': 'Exported By', 'Value': self.user['username'] if 'username' in self.user else 'System'},
+                {'Metadata': 'Total Products', 'Value': len(df)},
+                {'Metadata': 'Active Products', 'Value': len(df[df['Status'] == 'Active'])},
+                {'Metadata': 'Low Stock Items', 'Value': len(df[(df['Status'] == 'Active') & 
+                                                              (df['Stock Quantity'].astype(float) <= df['Reorder Level'].astype(float))])}
+            ])
+            
+            # Write both dataframes to separate sheets in the Excel file
+            with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+                # Add metadata sheet
+                metadata_df.to_excel(writer, sheet_name='Export Info', index=False)
+                
+                # Add products sheet
+                df.to_excel(writer, sheet_name='Products', index=False)
+                
+                # Auto-adjust column widths in both sheets
+                for sheet_name in writer.sheets:
+                    worksheet = writer.sheets[sheet_name]
+                    for idx, col in enumerate(worksheet.columns, 1):
+                        # Calculate max column width based on content
+                        max_width = 0
+                        for cell in col:
+                            if cell.value:
+                                # Add padding to the length
+                                cell_width = len(str(cell.value)) + 2
+                                max_width = max(max_width, cell_width)
+                        # Set column width with a maximum reasonable value
+                        worksheet.column_dimensions[worksheet.cell(row=1, column=idx).column_letter].width = min(max_width, 40)
+            
+            # Format the Excel file with header styling using openpyxl
+            from openpyxl import load_workbook
+            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            
+            wb = load_workbook(filename)
+            
+            # Style the Products sheet
+            ws = wb['Products']
+            
+            header_font = Font(name='Arial', size=11, bold=True, color='FFFFFF')
+            header_fill = PatternFill(start_color='E74C3C', end_color='E74C3C', fill_type='solid')
+            
+            # Style the headers
+            for cell in ws[1]:
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.alignment = Alignment(horizontal='center', vertical='center')
+            
+            # Style the metadata sheet
+            ws_meta = wb['Export Info']
+            
+            for cell in ws_meta[1]:
+                cell.font = header_font
+                cell.fill = header_fill
+            
+            metadata_border = Border(
+                left=Side(style='thin'), 
+                right=Side(style='thin'), 
+                top=Side(style='thin'), 
+                bottom=Side(style='thin')
+            )
+            
+            # Add borders to all metadata cells
+            for row in ws_meta.iter_rows(min_row=1, max_row=len(metadata_df) + 1):
+                for cell in row:
+                    cell.border = metadata_border
+            
+            # Save the styled workbook
+            wb.save(filename)
             
             # Log activity
             self.auth.log_activity(
@@ -1219,5 +1602,37 @@ class InventoryManagementWidget(QWidget):
                 f"Exported inventory to Excel: {filename}"
             )
             
+            QMessageBox.information(
+                self,
+                "Export Successful",
+                f"Inventory exported successfully to:\n{filename}"
+            )
+            
         except Exception as e:
             QMessageBox.critical(self, "Export Error", f"Failed to export inventory: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+
+
+# SQL script to add the medication type and unit columns to the database
+"""
+-- Add medication detail columns to products table if they don't exist
+ALTER TABLE products ADD COLUMN IF NOT EXISTS is_generic BOOLEAN DEFAULT FALSE;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS unit_measurement VARCHAR(50);
+
+-- Add medication detail columns to sale_items table if they don't exist
+ALTER TABLE sale_items ADD COLUMN IF NOT EXISTS is_generic BOOLEAN DEFAULT FALSE;
+ALTER TABLE sale_items ADD COLUMN IF NOT EXISTS unit_measurement VARCHAR(50);
+
+-- Update any existing NULL values to default values
+UPDATE products SET is_generic = FALSE WHERE is_generic IS NULL;
+UPDATE products SET unit_measurement = '' WHERE unit_measurement IS NULL;
+
+-- Update existing records in sale_items to match their products
+UPDATE sale_items si 
+SET 
+    is_generic = p.is_generic, 
+    unit_measurement = p.unit_measurement
+FROM products p
+WHERE si.product_id = p.product_id;
+"""
