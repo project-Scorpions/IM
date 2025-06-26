@@ -390,9 +390,9 @@ class ReportsWidget(QWidget):
         
         # Inventory table - Updated with medication type and unit measurement
         self.inventory_table = QTableWidget()
-        self.inventory_table.setColumnCount(9)
+        self.inventory_table.setColumnCount(10)
         self.inventory_table.setHorizontalHeaderLabels([
-            "ID", "Product Name", "Type", "Unit Measurement", "Category", 
+            "ID", "Product Name", "Description", "Type", "Unit Measurement", "Category", 
             "Unit Price", "Cost Price", "Stock Quantity", "Expiry Date"
         ])
         self.inventory_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -873,7 +873,7 @@ class ReportsWidget(QWidget):
             # Build query
             if has_med_fields:
                 query = """
-                    SELECT p.product_id, p.product_name, p.is_generic, p.unit_measurement,
+                    SELECT p.product_id, p.product_name, p.description, p.is_generic, p.unit_measurement,
                            c.name as category_name, p.unit_price, p.cost_price, 
                            p.stock_quantity, p.expiry_date, p.is_active
                     FROM products p
@@ -882,7 +882,7 @@ class ReportsWidget(QWidget):
                 """
             else:
                 query = """
-                    SELECT p.product_id, p.product_name, FALSE as is_generic, '' as unit_measurement,
+                    SELECT p.product_id, p.product_name, p.description, FALSE as is_generic, '' as unit_measurement,
                            c.name as category_name, p.unit_price, p.cost_price, 
                            p.stock_quantity, p.expiry_date, p.is_active
                     FROM products p
@@ -943,7 +943,7 @@ class ReportsWidget(QWidget):
                 self.inventory_table.insertRow(row_idx)
                 
                 # Unpack all values from the query result
-                product_id, name, is_generic, unit_measurement, category, unit_price, cost_price, stock, expiry, is_active = product
+                product_id, name, description, is_generic, unit_measurement, category, unit_price, cost_price, stock, expiry, is_active = product
                 
                 # ID
                 self.inventory_table.setItem(row_idx, 0, QTableWidgetItem(str(product_id)))
@@ -957,6 +957,12 @@ class ReportsWidget(QWidget):
                     product_name_item.setFont(font)
                 self.inventory_table.setItem(row_idx, 1, product_name_item)
                 
+                # Description
+                description_item = QTableWidgetItem(description or "")
+                if not is_active:
+                    description_item.setForeground(QColor("#888888"))
+                self.inventory_table.setItem(row_idx, 2, description_item)
+                
                 # Medication Type (Branded/Generic)
                 type_text = "Generic" if is_generic else "Branded"
                 type_item = QTableWidgetItem(type_text)
@@ -964,32 +970,32 @@ class ReportsWidget(QWidget):
                     type_item.setBackground(QColor("#d5f5e3"))  # Light green for generic
                 else:
                     type_item.setBackground(QColor("#f5e3e3"))  # Light red for branded
-                self.inventory_table.setItem(row_idx, 2, type_item)
+                self.inventory_table.setItem(row_idx, 3, type_item)
                 
                 # Unit Measurement
-                self.inventory_table.setItem(row_idx, 3, QTableWidgetItem(unit_measurement or ""))
+                self.inventory_table.setItem(row_idx, 4, QTableWidgetItem(unit_measurement or ""))
                 
                 # Category
-                self.inventory_table.setItem(row_idx, 4, QTableWidgetItem(category or "Uncategorized"))
+                self.inventory_table.setItem(row_idx, 5, QTableWidgetItem(category or "Uncategorized"))
                 
                 # Unit Price
                 price_item = QTableWidgetItem(f"₱{float(unit_price):.2f}")
                 price_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                self.inventory_table.setItem(row_idx, 5, price_item)
+                self.inventory_table.setItem(row_idx, 6, price_item)
                 
                 # Cost Price
                 cost_item = QTableWidgetItem(f"₱{float(cost_price):.2f}")
                 cost_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                self.inventory_table.setItem(row_idx, 6, cost_item)
+                self.inventory_table.setItem(row_idx, 7, cost_item)
                 
                 # Stock Quantity
                 stock_item = QTableWidgetItem(str(stock))
                 stock_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                self.inventory_table.setItem(row_idx, 7, stock_item)
+                self.inventory_table.setItem(row_idx, 8, stock_item)
                 
                 # Expiry Date
                 expiry_text = expiry.strftime("%Y-%m-%d") if expiry else "N/A"
-                self.inventory_table.setItem(row_idx, 8, QTableWidgetItem(expiry_text))
+                self.inventory_table.setItem(row_idx, 9, QTableWidgetItem(expiry_text))
             
             # Update chart
             self.update_inventory_chart()

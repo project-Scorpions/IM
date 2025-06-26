@@ -63,9 +63,9 @@ class POSWidget(QWidget):
         
         # Products table - UPDATED with new columns
         self.products_table = QTableWidget()
-        self.products_table.setColumnCount(7)  # increased column count to 7
+        self.products_table.setColumnCount(8)  # increased column count to 8
         self.products_table.setHorizontalHeaderLabels([
-            "ID", "Name", "Type", "Category", "Unit", "Price", "Stock"
+            "ID", "Name", "Description", "Type", "Category", "Unit", "Price", "Stock"
         ])
         self.products_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.products_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
@@ -82,6 +82,11 @@ class POSWidget(QWidget):
         
         self.product_name_label = QLabel("-")
         details_layout.addRow("Product:", self.product_name_label)
+        
+        self.product_description_label = QLabel("-")
+        self.product_description_label.setWordWrap(True)
+        self.product_description_label.setMaximumHeight(60)
+        details_layout.addRow("Description:", self.product_description_label)
         
         self.product_price_label = QLabel("-")
         details_layout.addRow("Unit Price:", self.product_price_label)
@@ -335,6 +340,7 @@ class POSWidget(QWidget):
         # Clear selection and product details
         self.selected_product = None
         self.product_name_label.setText("-")
+        self.product_description_label.setText("-")
         self.product_price_label.setText("-")
         self.product_stock_label.setText("-")
         self.add_to_cart_btn.setEnabled(False)
@@ -395,7 +401,7 @@ class POSWidget(QWidget):
             if has_medication_details:
                 # If medication detail columns exist, include them
                 query = """
-                    SELECT p.product_id, p.product_name, p.is_generic, c.name, 
+                    SELECT p.product_id, p.product_name, p.description, p.is_generic, c.name, 
                            p.unit_measurement, p.unit_price, p.stock_quantity
                     FROM products p
                     LEFT JOIN categories c ON p.category_id = c.category_id
@@ -405,7 +411,7 @@ class POSWidget(QWidget):
             else:
                 # Original query without medication details - add placeholders for the missing columns
                 query = """
-                    SELECT p.product_id, p.product_name, NULL as is_generic, c.name, 
+                    SELECT p.product_id, p.product_name, p.description, NULL as is_generic, c.name, 
                            '' as unit_measurement, p.unit_price, p.stock_quantity
                     FROM products p
                     LEFT JOIN categories c ON p.category_id = c.category_id
@@ -424,11 +430,12 @@ class POSWidget(QWidget):
                 
                 product_id = product[0]
                 name = product[1]
-                is_generic = product[2]
-                category = product[3] or "Uncategorized"
-                unit_measurement = product[4] or ""
-                price = product[5]
-                stock = product[6]
+                description = product[2] or ""
+                is_generic = product[3]
+                category = product[4] or "Uncategorized"
+                unit_measurement = product[5] or ""
+                price = product[6]
+                stock = product[7]
                 
                 # Add to autocomplete list
                 product_names.append(name)
@@ -439,25 +446,28 @@ class POSWidget(QWidget):
                 # Product Name (column 1)
                 self.products_table.setItem(row_idx, 1, QTableWidgetItem(name))
                 
-                # Type - Generic/Branded (column 2)
+                # Description (column 2)
+                self.products_table.setItem(row_idx, 2, QTableWidgetItem(description))
+                
+                # Type - Generic/Branded (column 3)
                 type_text = "Generic" if is_generic else "Branded"
-                self.products_table.setItem(row_idx, 2, QTableWidgetItem(type_text))
+                self.products_table.setItem(row_idx, 3, QTableWidgetItem(type_text))
                 
-                # Category (column 3)
-                self.products_table.setItem(row_idx, 3, QTableWidgetItem(category))
+                # Category (column 4)
+                self.products_table.setItem(row_idx, 4, QTableWidgetItem(category))
                 
-                # Unit Measurement (column 4)
-                self.products_table.setItem(row_idx, 4, QTableWidgetItem(unit_measurement))
+                # Unit Measurement (column 5)
+                self.products_table.setItem(row_idx, 5, QTableWidgetItem(unit_measurement))
                 
-                # Unit Price (column 5)
+                # Unit Price (column 6)
                 price_item = QTableWidgetItem(f"₱{float(price):.2f}")
                 price_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                self.products_table.setItem(row_idx, 5, price_item)
+                self.products_table.setItem(row_idx, 6, price_item)
                 
-                # Stock (column 6)
+                # Stock (column 7)
                 stock_item = QTableWidgetItem(str(stock))
                 stock_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                self.products_table.setItem(row_idx, 6, stock_item)
+                self.products_table.setItem(row_idx, 7, stock_item)
                 
                 # Store additional data in hidden roles for reference
                 self.products_table.item(row_idx, 0).setData(Qt.UserRole, is_generic)
@@ -513,7 +523,7 @@ class POSWidget(QWidget):
             
             # Filter by category
             if category_id is not None:
-                category = self.products_table.item(row, 3).text()  # Category is now in column 3
+                category = self.products_table.item(row, 4).text()  # Category is now in column 4
                 if category != self.category_filter.currentText():
                     show_row = False
             
@@ -525,6 +535,7 @@ class POSWidget(QWidget):
         if not selected_rows:
             self.selected_product = None
             self.product_name_label.setText("-")
+            self.product_description_label.setText("-")
             self.product_price_label.setText("-")
             self.product_stock_label.setText("-")
             self.add_to_cart_btn.setEnabled(False)
@@ -536,11 +547,12 @@ class POSWidget(QWidget):
         
         product_id = int(self.products_table.item(row, 0).text())
         product_name = self.products_table.item(row, 1).text()
-        is_generic_text = self.products_table.item(row, 2).text()
-        category = self.products_table.item(row, 3).text()
-        unit_measurement = self.products_table.item(row, 4).text()
-        price_text = self.products_table.item(row, 5).text()
-        stock = int(self.products_table.item(row, 6).text())
+        description = self.products_table.item(row, 2).text()
+        is_generic_text = self.products_table.item(row, 3).text()
+        category = self.products_table.item(row, 4).text()
+        unit_measurement = self.products_table.item(row, 5).text()
+        price_text = self.products_table.item(row, 6).text()
+        stock = int(self.products_table.item(row, 7).text())
         
         # Parse price from the text
         unit_price = float(price_text.replace('₱', ''))
@@ -551,6 +563,7 @@ class POSWidget(QWidget):
         self.selected_product = {
             'id': product_id,
             'name': product_name,
+            'description': description,
             'price': unit_price,
             'stock': stock,
             'is_generic': is_generic,
@@ -559,6 +572,7 @@ class POSWidget(QWidget):
         }
         
         self.product_name_label.setText(product_name)
+        self.product_description_label.setText(description or "No description available")
         self.product_price_label.setText(f"₱{unit_price:.2f}")
         self.product_stock_label.setText(str(stock))
         

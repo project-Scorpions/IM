@@ -630,9 +630,9 @@ class InventoryManagementWidget(QWidget):
         
         # Products table - UPDATED with new columns
         self.products_table = QTableWidget()
-        self.products_table.setColumnCount(10)
+        self.products_table.setColumnCount(11)
         self.products_table.setHorizontalHeaderLabels([
-            "ID", "Name", "Type", "Category", "Unit", "Price", "Stock", "Expiry", "Status", "Actions"
+            "ID", "Name", "Description", "Type", "Category", "Unit", "Price", "Stock", "Expiry", "Status", "Actions"
         ])
         self.products_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.products_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
@@ -763,7 +763,7 @@ class InventoryManagementWidget(QWidget):
             # Update query based on whether the fields exist
             if has_med_fields:
                 query = """
-                    SELECT p.product_id, p.product_name, p.is_generic, c.name, p.unit_measurement,
+                    SELECT p.product_id, p.product_name, p.description, p.is_generic, c.name, p.unit_measurement,
                            p.unit_price, p.stock_quantity, p.expiry_date, p.reorder_level, p.is_active
                     FROM products p
                     LEFT JOIN categories c ON p.category_id = c.category_id
@@ -771,7 +771,7 @@ class InventoryManagementWidget(QWidget):
                 """
             else:
                 query = """
-                    SELECT p.product_id, p.product_name, NULL as is_generic, c.name, NULL as unit_measurement,
+                    SELECT p.product_id, p.product_name, p.description, NULL as is_generic, c.name, NULL as unit_measurement,
                            p.unit_price, p.stock_quantity, p.expiry_date, p.reorder_level, p.is_active
                     FROM products p
                     LEFT JOIN categories c ON p.category_id = c.category_id
@@ -787,14 +787,15 @@ class InventoryManagementWidget(QWidget):
                 
                 product_id = product[0]
                 name = product[1]
-                is_generic = product[2]
-                category = product[3] or "Uncategorized"
-                unit_measurement = product[4] or ""
-                unit_price = product[5]
-                stock_qty = product[6]
-                expiry_date = product[7]
-                reorder_level = product[8]
-                is_active = product[9]
+                description = product[2] or ""
+                is_generic = product[3]
+                category = product[4] or "Uncategorized"
+                unit_measurement = product[5] or ""
+                unit_price = product[6]
+                stock_qty = product[7]
+                expiry_date = product[8]
+                reorder_level = product[9]
+                is_active = product[10]
                 
                 # Product ID
                 self.products_table.setItem(row_idx, 0, QTableWidgetItem(str(product_id)))
@@ -808,20 +809,26 @@ class InventoryManagementWidget(QWidget):
                     product_name_item.setFont(font)
                 self.products_table.setItem(row_idx, 1, product_name_item)
                 
+                # Description
+                description_item = QTableWidgetItem(description)
+                if not is_active:  # If not active
+                    description_item.setForeground(QColor("#888888"))  # Grey text for inactive
+                self.products_table.setItem(row_idx, 2, description_item)
+                
                 # Medication Type (Branded/Generic)
                 type_text = "Generic" if is_generic else "Branded"
-                self.products_table.setItem(row_idx, 2, QTableWidgetItem(type_text))
+                self.products_table.setItem(row_idx, 3, QTableWidgetItem(type_text))
                 
                 # Category
-                self.products_table.setItem(row_idx, 3, QTableWidgetItem(category))
+                self.products_table.setItem(row_idx, 4, QTableWidgetItem(category))
                 
                 # Unit Measurement
-                self.products_table.setItem(row_idx, 4, QTableWidgetItem(unit_measurement))
+                self.products_table.setItem(row_idx, 5, QTableWidgetItem(unit_measurement))
                 
                 # Unit Price
                 price_item = QTableWidgetItem(f"₱{float(unit_price):.2f}")
                 price_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-                self.products_table.setItem(row_idx, 5, price_item)
+                self.products_table.setItem(row_idx, 6, price_item)
                 
                 # Stock Quantity
                 stock_item = QTableWidgetItem(str(stock_qty))
@@ -832,7 +839,7 @@ class InventoryManagementWidget(QWidget):
                 elif stock_qty < reorder_level:
                     stock_item.setBackground(QColor("#FFFFCC"))  # Light yellow for low stock
                 
-                self.products_table.setItem(row_idx, 6, stock_item)
+                self.products_table.setItem(row_idx, 7, stock_item)
                 
                 # Expiry Date
                 if expiry_date:
@@ -844,9 +851,9 @@ class InventoryManagementWidget(QWidget):
                     elif days_to_expiry < 30:
                         expiry_item.setBackground(QColor("#FFCC99"))  # Orange for expiring soon
                     
-                    self.products_table.setItem(row_idx, 7, expiry_item)
+                    self.products_table.setItem(row_idx, 8, expiry_item)
                 else:
-                    self.products_table.setItem(row_idx, 7, QTableWidgetItem("N/A"))
+                    self.products_table.setItem(row_idx, 8, QTableWidgetItem("N/A"))
                 
                 # Status
                 if not is_active:
@@ -870,7 +877,7 @@ class InventoryManagementWidget(QWidget):
                 
                 status_item = QTableWidgetItem(status)
                 status_item.setBackground(QColor(status_color))
-                self.products_table.setItem(row_idx, 8, status_item)
+                self.products_table.setItem(row_idx, 9, status_item)
                 
                 # Actions
                 actions_widget = QWidget()
@@ -892,7 +899,7 @@ class InventoryManagementWidget(QWidget):
                 delete_btn.clicked.connect(lambda _, pid=product_id, name=name: self.delete_product(pid, name))
                 actions_layout.addWidget(delete_btn)
                 
-                self.products_table.setCellWidget(row_idx, 9, actions_widget)
+                self.products_table.setCellWidget(row_idx, 10, actions_widget)
             
             self.products_table.resizeColumnsToContents()
             self.products_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
@@ -932,7 +939,7 @@ class InventoryManagementWidget(QWidget):
             
             # Filter by medication type (branded/generic)
             if type_filter:
-                type_text = self.products_table.item(row, 2).text().lower()
+                type_text = self.products_table.item(row, 3).text().lower()
                 if type_filter == "branded" and type_text != "branded":
                     show_row = False
                 elif type_filter == "generic" and type_text != "generic":
@@ -940,7 +947,7 @@ class InventoryManagementWidget(QWidget):
             
             # Filter by category
             if category_id is not None:
-                category_name = self.products_table.item(row, 3).text()
+                category_name = self.products_table.item(row, 4).text()
                 category_match = False
                 
                 for i in range(self.category_filter.count()):
@@ -954,7 +961,7 @@ class InventoryManagementWidget(QWidget):
             
             # Filter by stock level
             if stock_filter:
-                stock_qty = int(self.products_table.item(row, 6).text())
+                stock_qty = int(self.products_table.item(row, 7).text())
                 reorder_level = 10  # Default reorder level
                 
                 if stock_filter == "low" and stock_qty > reorder_level:
@@ -965,8 +972,8 @@ class InventoryManagementWidget(QWidget):
                     show_row = False
             
             # Filter by expiry date
-            if expiry_filter and self.products_table.item(row, 7).text() != "N/A":
-                expiry_date = QDate.fromString(self.products_table.item(row, 7).text(), "yyyy-MM-dd")
+            if expiry_filter and self.products_table.item(row, 8).text() != "N/A":
+                expiry_date = QDate.fromString(self.products_table.item(row, 8).text(), "yyyy-MM-dd")
                 days_to_expiry = QDate.currentDate().daysTo(expiry_date)
                 
                 if expiry_filter == "expired" and days_to_expiry >= 0:
@@ -976,9 +983,9 @@ class InventoryManagementWidget(QWidget):
                 elif expiry_filter == "valid" and days_to_expiry < 0:
                     show_row = False
             
-            # Filter by status - use column 8 which has the status text
+            # Filter by status - use column 9 which has the status text
             if status_filter is not None:
-                status_text = self.products_table.item(row, 8).text()
+                status_text = self.products_table.item(row, 9).text()
                 is_active = status_text != "Inactive"  # Any status except "Inactive" is considered active
                 
                 if status_filter == "active" and not is_active:
@@ -1232,7 +1239,7 @@ class InventoryManagementWidget(QWidget):
             # Update query based on whether the fields exist
             if has_med_fields:
                 query = """
-                    SELECT p.product_id, p.product_name, p.is_generic, c.name, 
+                    SELECT p.product_id, p.product_name, p.description, p.is_generic, c.name, 
                            p.stock_quantity, p.reorder_level
                     FROM products p
                     LEFT JOIN categories c ON p.category_id = c.category_id
@@ -1241,7 +1248,7 @@ class InventoryManagementWidget(QWidget):
                 """
             else:
                 query = """
-                    SELECT p.product_id, p.product_name, NULL as is_generic, c.name, 
+                    SELECT p.product_id, p.product_name, p.description, NULL as is_generic, c.name, 
                            p.stock_quantity, p.reorder_level
                     FROM products p
                     LEFT JOIN categories c ON p.category_id = c.category_id
@@ -1256,7 +1263,7 @@ class InventoryManagementWidget(QWidget):
             for row_idx, product in enumerate(low_stock):
                 self.low_stock_table.insertRow(row_idx)
                 
-                product_id, product_name, is_generic, category_name, stock_qty, reorder_level = product
+                product_id, product_name, description, is_generic, category_name, stock_qty, reorder_level = product
                 
                 # Product Name
                 self.low_stock_table.setItem(row_idx, 0, QTableWidgetItem(product_name))
@@ -1327,7 +1334,7 @@ class InventoryManagementWidget(QWidget):
             # Update query based on whether the fields exist
             if has_med_fields:
                 query = """
-                    SELECT p.product_id, p.product_name, p.is_generic, c.name, p.expiry_date
+                    SELECT p.product_id, p.product_name, p.description, p.is_generic, c.name, p.expiry_date
                     FROM products p
                     LEFT JOIN categories c ON p.category_id = c.category_id
                     WHERE p.expiry_date IS NOT NULL AND p.expiry_date <= %s AND p.is_active = TRUE
@@ -1335,7 +1342,7 @@ class InventoryManagementWidget(QWidget):
                 """
             else:
                 query = """
-                    SELECT p.product_id, p.product_name, NULL as is_generic, c.name, p.expiry_date
+                    SELECT p.product_id, p.product_name, p.description, NULL as is_generic, c.name, p.expiry_date
                     FROM products p
                     LEFT JOIN categories c ON p.category_id = c.category_id
                     WHERE p.expiry_date IS NOT NULL AND p.expiry_date <= %s AND p.is_active = TRUE
@@ -1350,7 +1357,7 @@ class InventoryManagementWidget(QWidget):
             for row_idx, product in enumerate(expiring):
                 self.expiring_table.insertRow(row_idx)
                 
-                product_id, product_name, is_generic, category_name, expiry_date = product
+                product_id, product_name, description, is_generic, category_name, expiry_date = product
                 
                 # Product Name
                 self.expiring_table.setItem(row_idx, 0, QTableWidgetItem(product_name))
